@@ -17,7 +17,7 @@ It's a single static page: no account, no server, no install. Your splits stay i
 ## Features
 
 - **Body maps:** front and back views with 27 muscles, including neck, serratus, hip flexors and tibialis. A day shows main targets and helpers. The week shows how often each muscle is a main target: 1×, 2×, 3×+, helper only or missed.
-- **Spiderweb chart:** weekly sets or days per week, by muscle or by muscle group. Select a day to overlay it on the whole week.
+- **Spiderweb chart:** weekly sets or days per week, by muscle or by muscle group. Select a day to overlay it on the whole week. Choose which muscles or groups it shows, or pick a preset (key 16, upper body, lower body & core), so it stays a readable web.
 - **Weekly set targets:** set a target range (10–20 sets by default) for every muscle, or override it for single muscles. The target shows as a dashed ring on the spiderweb, and each muscle's card shows how far you are from it.
 - **806 exercises:** 82 hand-checked staples plus 724 from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), nearly all with start and finish photos and step-by-step instructions. Tap a photo to see it full size.
 - **Find the right exercise:** search by name or muscle, and narrow it down with the muscle group, equipment and source dropdowns. Tap a muscle on the map to list every exercise that trains it.

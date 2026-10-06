@@ -181,6 +181,9 @@ let state=load()||fresh();
 if(!Array.isArray(state.custom))state.custom=[];
 if(!state.targets||typeof state.targets!=='object')state.targets={min:DEFAULT_TARGET.min,max:DEFAULT_TARGET.max,per:{}};
 if(!state.targets.per)state.targets.per={};
+/* which muscles the spiderweb shows (hidden ids); the maps and tables always count every muscle */
+if(!state.web||!Array.isArray(state.web.hide))state.web={hide:[]};
+state.web.hide=state.web.hide.filter(id=>MBY[id]);
 /* weekly set target for a muscle: its own override, else the global default */
 function tgt(m){const o=state.targets.per[m];return{min:o&&o.min!=null?o.min:state.targets.min,max:o&&o.max!==undefined?o.max:state.targets.max,own:!!o}}
 function tgtState(sets,t){return sets<t.min?'under':(t.max&&sets>t.max?'over':'in')}
@@ -292,6 +295,26 @@ const coverHTML=c=>'<span class="pill ok">'+c.ok+' trained 2×+</span><span clas
 const RORDER=['chest_upper','chest','serratus','delt_front','delt_side','delt_rear','biceps','brachialis','brachioradialis','forearm_flex','forearm_ext','triceps','neck','traps_upper','traps_mid','upper_back','lats','lower_back','abs','obliques','hip_flexors','glutes','hamstrings','quads','adductors','calves','tibialis'];
 const SHORT={chest_upper:'Upper chest',chest:'Chest',delt_front:'Front delts',delt_side:'Side delts',delt_rear:'Rear delts',biceps:'Biceps',brachialis:'Brachialis',brachioradialis:'Brachiorad.',forearm_flex:'Forearm flex.',forearm_ext:'Forearm ext.',triceps:'Triceps',traps_upper:'Upper traps',traps_mid:'Mid traps',upper_back:'Upper back',lats:'Lats',lower_back:'Lower back',abs:'Abs',obliques:'Obliques',glutes:'Glutes',hamstrings:'Hamstrings',quads:'Quads',adductors:'Adductors',calves:'Calves',serratus:'Serratus',neck:'Neck',hip_flexors:'Hip flexors',tibialis:'Tibialis'};
 const RGROUPS=['Chest','Shoulders','Arms','Back','Core','Legs'];
+const webOn=id=>!state.web.hide.includes(id);
+const webMuscles=()=>RORDER.filter(webOn);
+/* a group stays on the web while any of its muscles does; the Groups view needs 3 spokes, so it falls back to all 6 */
+const webGroupsRaw=()=>RGROUPS.filter(g=>MUSCLES.some(m=>m.g===g&&webOn(m.id)));
+const webGroups=()=>{const g=webGroupsRaw();return g.length>=3?g:RGROUPS};
+const WEB_KEY=['chest_upper','chest','delt_front','delt_side','delt_rear','biceps','triceps','traps_upper','upper_back','lats','lower_back','abs','glutes','quads','hamstrings','calves'];
+const WEB_PRESETS=[
+  {id:'all',name:'All 27',show:()=>RORDER},
+  {id:'key',name:'Key 16',show:()=>WEB_KEY},
+  {id:'upper',name:'Upper body',show:()=>MUSCLES.filter(m=>['Chest','Shoulders','Back','Arms'].includes(m.g)).map(m=>m.id)},
+  {id:'lower',name:'Lower body & core',show:()=>MUSCLES.filter(m=>['Core','Legs'].includes(m.g)).map(m=>m.id)}];
+function webSet(show){const keep=new Set(show);state.web.hide=RORDER.filter(id=>!keep.has(id))}
+function webPresetOn(p){const keep=new Set(p.show());return RORDER.every(id=>keep.has(id)===webOn(id))}
+const webPdfNote=()=>{const n=state.web.hide.length;return n?' '+n+' muscle'+(n>1?'s are':' is')+' hidden from this web (body maps and tables include them).':''};
+function webHiddenNote(){
+  const nm=state.web.hide.length;if(!nm)return '';
+  const gh=RGROUPS.length-webGroups().length;
+  const txt=ui.rax==='groups'?(gh?gh+' group'+(gh>1?'s':'')+' hidden':''):nm+' muscle'+(nm>1?'s':'')+' hidden';
+  return txt?'<span class="tgt-note">'+txt+' · <button class="linkbtn" type="button" data-wpre="all">Show all</button></span>':'';
+}
 function groupDay(items,g){let p=0,s=0;items.forEach(it=>{const e=EXM[it.ex];if(!e)return;
   if(e.p.some(m=>MBY[m]&&MBY[m].g===g))p+=it.sets;else if(e.s.some(m=>MBY[m]&&MBY[m].g===g))s+=it.sets;});return{p,s}}
 /* axes for one split: week value by metric, optional day overlay value */
@@ -299,10 +322,10 @@ function radarAxes(split,dayItems,rax,rmet){
   const sets=rmet==='sets';
   if(rax==='muscles'){
     const ws=weekStats(split),ds=dayItems?itemsStats(dayItems):null;
-    return RORDER.map(id=>{const w=ws[id];return{key:id,label:SHORT[id],full:MBY[id].name,week:sets?w.sets:w.days,zero:w.days===0,
+    return webMuscles().map(id=>{const w=ws[id];return{key:id,label:SHORT[id],full:MBY[id].name,week:sets?w.sets:w.days,zero:w.days===0,
       day:ds?(ds[id].p+ds[id].s/2):null,info:fmt(w.sets)+' sets/week · main target '+w.days+'×'+(w.dayList.length?' ('+w.dayList.join(', ')+')':'')}});
   }
-  return RGROUPS.map(g=>{let tot=0,days=0,dl=[];
+  return webGroups().map(g=>{let tot=0,days=0,dl=[];
     split.days.forEach((d,i)=>{const x=groupDay(d.items,g);tot+=x.p+x.s/2;if(x.p>0){days++;dl.push(DAYS[i])}});
     const dv=dayItems?groupDay(dayItems,g):null;
     return{key:g,label:g,full:g,week:sets?tot:days,zero:days===0,day:dv?dv.p+dv.s/2:null,info:fmt(tot)+' sets/week · trained '+days+'×'+(dl.length?' ('+dl.join(', ')+')':'')}});
@@ -310,7 +333,7 @@ function radarAxes(split,dayItems,rax,rmet){
 /* series: [{vals:[], cls:'a'|'b'}] */
 function drawRadar(svg,axes,series,opt){
   opt=opt||{};
-  svg.innerHTML='';svg.classList.toggle('grp',opt.rax==='groups');
+  svg.innerHTML='';svg.classList.toggle('grp',opt.rax==='groups');svg.classList.toggle('few',opt.rax!=='groups'&&axes.length<=12);
   const W=600,H=470,cx=W/2,cy=H/2+4,R=opt.rax==='groups'?176:168,n=axes.length,sets=opt.rmet==='sets';
   const tg=opt.target||null;
   const max=Math.max(0,...series.flatMap(s=>s.vals.map(v=>v||0)),...(tg?tg.map(t=>t.min||0):[]));
@@ -349,6 +372,9 @@ function drawRadar(svg,axes,series,opt){
 function syncRadarCtl(){
   document.querySelectorAll('[data-rax]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.rax===ui.rax));
   document.querySelectorAll('[data-rmet]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.rmet===ui.rmet));
+  const grp=ui.rax==='groups',n=grp?webGroups().length:webMuscles().length,tot=grp?RGROUPS.length:RORDER.length;
+  document.querySelectorAll('[data-webpick]').forEach(b=>{b.textContent=(n===tot?'Showing all '+tot:'Showing '+n+' of '+tot)+' ▾';b.classList.toggle('on',n<tot);
+    b.setAttribute('aria-label','Choose which '+(grp?'muscle groups':'muscles')+' the spiderweb shows. Showing '+n+' of '+tot+'.')});
 }
 function renderRadar(){
   syncRadarCtl();
@@ -359,7 +385,7 @@ function renderRadar(){
   const target=radarTarget(axes);
   drawRadar($('radar'),axes,series,{rax:ui.rax,rmet:ui.rmet,marks:true,hit:true,focus:ui.rax==='muscles'?ui.focus:null,target});
   $('rsub').textContent=(sets?'Weekly sets for each '+(ui.rax==='muscles'?'muscle':'muscle group')+'. Helpers count as half a set.':'Days per week each '+(ui.rax==='muscles'?'muscle':'group')+' is a main target.')+' A rounder web means a more balanced split. Spokes marked ! are never a main target.';
-  $('rlegend').innerHTML=(showDay?'<span><i style="background:var(--s-a)"></i>Whole week</span><span><i style="background:var(--s-b)"></i>'+DAYS[state.view]+(day.name?' · '+esc(day.name):'')+'</span>':'')+targetLegend(target);
+  $('rlegend').innerHTML=(showDay?'<span><i style="background:var(--s-a)"></i>Whole week</span><span><i style="background:var(--s-b)"></i>'+DAYS[state.view]+(day.name?' · '+esc(day.name):'')+'</span>':'')+targetLegend(target)+webHiddenNote();
   renderTargetCtl();
 }
 /* target band for the spiderweb: per-muscle sets, 2 days a week for frequency, none for group sets */
@@ -586,7 +612,7 @@ function renderCompare(){
   const ax=radarAxes(A,null,ui.rax,ui.rmet),bx=radarAxes(B,null,ui.rax,ui.rmet);
   drawRadar($('cmpRadar'),ax,[{vals:ax.map(a=>a.week),cls:'a',name:A.name,info:ax.map(a=>a.info)},{vals:bx.map(a=>a.week),cls:'b',name:B.name,info:bx.map(a=>a.info),}],{rax:ui.rax,rmet:ui.rmet,hit:true,dotsAtZero:true,target:radarTarget(ax)});
   $('crsub').textContent=(ui.rmet==='sets'?'Weekly sets per '+(ui.rax==='muscles'?'muscle':'muscle group')+', helpers count as half.':'Days per week as main target.')+' Where one web reaches further, that split trains it more.';
-  $('crlegend').innerHTML='<span><i style="background:var(--s-a)"></i>'+esc(A.name||'Untitled split')+'</span><span><i style="background:var(--s-b)"></i>'+esc(B.name||'Untitled split')+'</span>'+targetLegend(radarTarget(ax));
+  $('crlegend').innerHTML='<span><i style="background:var(--s-a)"></i>'+esc(A.name||'Untitled split')+'</span><span><i style="background:var(--s-b)"></i>'+esc(B.name||'Untitled split')+'</span>'+targetLegend(radarTarget(ax))+webHiddenNote();
   let h='<table class="wk"><thead><tr><th>Muscle</th><th>'+esc(A.name||'A')+'</th><th class="n">Sets</th><th>'+esc(B.name||'B')+'</th><th class="n">Sets</th><th class="n">Change</th></tr></thead><tbody>';
   MG.forEach(g=>{h+='<tr class="gh"><td colspan="6">'+g+'</td></tr>';
     MUSCLES.filter(m=>m.g===g).forEach(m=>{const a=wa[m.id],b=wb[m.id],sa=wStatus(a),sb=wStatus(b),d=b.sets-a.sets;
@@ -620,11 +646,40 @@ function templateDays(t){const src=t.days==='DEFAULT'?DEFAULT:t.days;return src.
 function uniqueName(base){const names=new Set(state.splits.map(s=>s.name));if(!names.has(base))return base;let n=2;while(names.has(base+' '+n))n++;return base+' '+n}
 function addSplit(name,days,msg){state.splits.push({id:uid(),name:uniqueName(name),days});state.active=state.splits.length-1;state.view=days.some(d=>d.items.length)?'week':0;ui.focus=null;ui.preview=null;save();render();toast(msg)}
 let menuOpener=null,menuY=0;
-function showMenu(btn,html,label){
-  const m=$('newMenu');m.innerHTML=html;m.setAttribute('aria-label',label||'Menu');
-  m.hidden=false;const r=btn.getBoundingClientRect(),w=Math.min(320,innerWidth-24);
-  m.style.width=w+'px';m.style.left=Math.max(12,Math.min(r.left,innerWidth-w-12))+'px';m.style.top=(r.bottom+6)+'px';
-  menuOpener=btn;menuY=scrollY;btn.setAttribute('aria-expanded','true');const f=m.querySelector('.mi');if(f)f.focus();
+function showMenu(btn,html,label,o){
+  o=o||{};const m=$('newMenu');m.innerHTML=html;m.setAttribute('aria-label',label||'Menu');
+  m.setAttribute('role',o.role||'menu');m.className='menu'+(o.cls?' '+o.cls:'');
+  m.style.maxHeight='';m.hidden=false;const r=btn.getBoundingClientRect(),w=Math.min(o.width||320,innerWidth-24);
+  m.style.width=w+'px';m.style.left=Math.max(12,Math.min(o.alignRight?r.right-w:r.left,innerWidth-w-12))+'px';
+  const h=m.offsetHeight,below=innerHeight-r.bottom-18,above=r.top-18;
+  const bx=o.beside&&o.beside.getBoundingClientRect();
+  if(bx&&bx.left-w-16>=12){/* sit beside the chart so changes stay visible */
+    m.style.left=(bx.left-w-16)+'px';const top=Math.max(12,Math.min(r.top,innerHeight-12-h));m.style.top=top+'px';
+    if(h>innerHeight-24)m.style.maxHeight=(innerHeight-24)+'px';}
+  else if(h>below&&below<240&&above>below){m.style.top=Math.max(12,r.top-6-h)+'px';if(h>above)m.style.maxHeight=above+'px'}
+  else{m.style.top=(r.bottom+6)+'px';if(h>below)m.style.maxHeight=Math.max(160,below)+'px'}
+  menuOpener=btn;menuY=scrollY;btn.setAttribute('aria-expanded','true');const f=m.querySelector(o.focus||'.mi');if(f)f.focus();
+}
+/* spiderweb spokes picker */
+function webPanelHTML(){
+  const n=webMuscles().length,g=webGroupsRaw().length;
+  let h='<div class="wp-head"><b>Spokes on the spiderweb</b><span>Choose what the web shows. Body maps, cards and tables still count every muscle.</span></div>';
+  h+='<div class="wp-pre" role="group" aria-label="Presets">'+WEB_PRESETS.map(p=>'<button type="button" data-wpre="'+p.id+'" aria-pressed="'+webPresetOn(p)+'">'+p.name+'</button>').join('')+'</div>';
+  MG.forEach(gr=>{const ms=MUSCLES.filter(m=>m.g===gr),on=ms.filter(m=>webOn(m.id)).length;
+    h+='<div class="wp-g"><button type="button" class="wp-gt" role="checkbox" data-wg="'+gr+'" aria-checked="'+(on===ms.length?'true':on?'mixed':'false')+'"><i class="ck"></i>'+gr+'<span class="n">'+on+'/'+ms.length+'</span></button><div class="wp-ms">'+
+      ms.map(m=>'<button type="button" class="wp-m" data-wm="'+m.id+'" aria-pressed="'+webOn(m.id)+'">'+esc(SHORT[m.id])+'</button>').join('')+'</div></div>';});
+  h+='<div class="wp-foot">'+n+' of '+RORDER.length+' muscles · Groups view: '+(g>=3?g+' of 6 groups':'needs 3 groups, so it shows all 6')+'</div>';
+  return h;
+}
+function openWebPanel(btn){showMenu(btn,webPanelHTML(),'Spiderweb spokes',{role:'dialog',cls:'wp',width:380,alignRight:true,focus:'[data-wpre]',beside:btn.closest('.radar').querySelector('.rbox')})}
+function webChanged(focusSel){
+  save();isCmp()?renderCompare():renderRadar();
+  const m=$('newMenu');if(!m.hidden&&m.classList.contains('wp')){m.innerHTML=webPanelHTML();const f=focusSel&&m.querySelector(focusSel);if(f)f.focus()}
+}
+function webToggle(ids,on){
+  const next=new Set(state.web.hide);ids.forEach(id=>on?next.delete(id):next.add(id));
+  if(RORDER.length-next.size<3){toast('Keep at least 3 muscles on the web.');return false}
+  state.web.hide=RORDER.filter(id=>next.has(id));return true;
 }
 function openMenu(btn){
   showMenu(btn,'<button class="mi" type="button" role="menuitem" data-tpl="blank"><b>Blank split</b><span>Start from an empty week</span></button><div class="mh">Templates</div>'+
@@ -647,7 +702,7 @@ document.addEventListener('pointerdown',ev=>{const m=$('newMenu');if(!m.hidden&&
 addEventListener('resize',closeMenu);addEventListener('scroll',()=>{if(menuOpener&&Math.abs(scrollY-menuY)>40)closeMenu()},{passive:true});
 document.addEventListener('keydown',ev=>{const m=$('newMenu');if(m.hidden)return;
   if(ev.key==='Escape'){const o=menuOpener;closeMenu();if(o)o.focus()}
-  else if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){ev.preventDefault();const it=[...m.querySelectorAll('.mi')];const k=it.indexOf(document.activeElement);it[(k+(ev.key==='ArrowDown'?1:-1)+it.length)%it.length].focus()}});
+  else if((ev.key==='ArrowDown'||ev.key==='ArrowUp')&&m.querySelector('.mi')){ev.preventDefault();const it=[...m.querySelectorAll('.mi')];const k=it.indexOf(document.activeElement);it[(k+(ev.key==='ArrowDown'?1:-1)+it.length)%it.length].focus()}});
 document.addEventListener('click',ev=>{
   const t=ev.target.closest('button,tr.go,.mus,.r-hit');if(!t)return;
   if(t.classList.contains('r-hit')){
@@ -661,6 +716,10 @@ document.addEventListener('click',ev=>{
     const m=t.getAttribute('data-m');ui.focus=ui.focus===m?null:m;if(ui.focus)ui.cat='All';render();revealCard();return}
   if(t.dataset.split!==undefined){state.active=+t.dataset.split;if(isCmp())state.view='week';ui.focus=null;ui.preview=null;save();render();return}
   if(t.id==='newSplit'){menuOpener===t&&!$('newMenu').hidden?closeMenu():openMenu(t);return}
+  if(t.dataset.webpick!==undefined){menuOpener===t&&!$('newMenu').hidden?closeMenu():openWebPanel(t);return}
+  if(t.dataset.wpre){const p=WEB_PRESETS.find(x=>x.id===t.dataset.wpre);if(p){webSet(p.show());webChanged('[data-wpre="'+p.id+'"]')}return}
+  if(t.dataset.wg){const ids=MUSCLES.filter(m=>m.g===t.dataset.wg).map(m=>m.id);if(webToggle(ids,!ids.every(webOn)))webChanged('[data-wg="'+t.dataset.wg+'"]');return}
+  if(t.dataset.wm){if(webToggle([t.dataset.wm],!webOn(t.dataset.wm)))webChanged('[data-wm="'+t.dataset.wm+'"]');return}
   if(t.id==='shareBtn'){menuOpener===t&&!$('newMenu').hidden?closeMenu():openShareMenu(t);return}
   if(t.dataset.act){closeMenu();const a=t.dataset.act;
     if(a==='link')copyShareLink();else if(a==='exp1')exportJSON([S()]);else if(a==='expall')exportJSON(state.splits);else if(a==='import')$('importFile').click();return}
@@ -795,7 +854,7 @@ function printify(svg){
     if(has('r-ring'))set(e,{fill:'none',stroke:'#d6dce2','stroke-width':1});
     if(has('r-spoke'))set(e,{stroke:'#d6dce2','stroke-width':1});
     if(has('r-tick'))set(e,{fill:'#5b6874','font-size':grp?14:10,'font-family':FONT});
-    if(has('r-lab'))set(e,{fill:has('zero')?'#16202a':'#5b6874','font-size':grp?19:11.5,'font-weight':has('zero')?800:600,'font-family':FONT});
+    if(has('r-lab'))set(e,{fill:has('zero')?'#16202a':'#5b6874','font-size':grp?19:svg.classList.contains('few')?15:11.5,'font-weight':has('zero')?800:600,'font-family':FONT});
     if(has('r-a'))set(e,{fill:'#c2263a','fill-opacity':.16,stroke:'#c2263a','stroke-width':2,'stroke-linejoin':'round'});
     if(has('r-b'))set(e,{fill:'#2f63b5','fill-opacity':.12,stroke:'#2f63b5','stroke-width':2,'stroke-linejoin':'round'});
     if(has('r-dot'))set(e,{fill:has('b')?'#2f63b5':'#c2263a',stroke:'#ffffff','stroke-width':2});
@@ -849,7 +908,7 @@ async function pdfSplit(split){
   const rw=150,rh=rw*RAD_R,ax=radarAxes(split,null,'muscles','sets');
   const r1=await svgPng(radarSvg(ax,[{vals:ax.map(a=>a.week),cls:'a'}],'muscles','sets',true),rw,rh);
   doc.addImage(r1,'JPEG',30,ry+3,rw,rh);
-  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);doc.text('Spokes marked ! are never a main target.',14,ry+rh+6);
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);doc.text('Spokes marked ! are never a main target.'+webPdfNote(),14,ry+rh+6);
   // day by day
   doc.addPage();pdfHeader(doc,(split.name||'Untitled split')+'  ·  Day by day');
   doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...MUTED);
@@ -906,6 +965,7 @@ async function pdfCompare(A,B){
   const rw=140,rh=rw*RAD_R,ax=radarAxes(A,null,'muscles','sets'),bxs=radarAxes(B,null,'muscles','sets');
   const img=await svgPng(radarSvg(ax,[{vals:ax.map(a=>a.week),cls:'a'},{vals:bxs.map(a=>a.week),cls:'b'}],'muscles','sets',false),rw,rh);
   doc.addImage(img,'JPEG',35,ry+3,rw,rh);
+  if(state.web.hide.length){doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);doc.text(webPdfNote().trim(),14,ry+rh+6)}
   // comparison table
   doc.addPage();pdfHeader(doc,(A.name||'A')+'  vs  '+(B.name||'B')+'  ·  Muscle by muscle');
   const rows=[];MG.forEach(g=>MUSCLES.filter(m=>m.g===g).forEach(m=>{const a=wa[m.id],b=wb[m.id],sa=wStatus(a),sb=wStatus(b),d=b.sets-a.sets;

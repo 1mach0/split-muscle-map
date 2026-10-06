@@ -265,6 +265,28 @@ details.custom summary{cursor:pointer;font-weight:600;font-size:14px}
 .r-hit{fill:transparent;cursor:pointer}
 .r-hit:hover{fill:var(--ink);fill-opacity:.05}
 .r-focus{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3}
+.few .r-lab{font-size:15px}
+.webbtn{border:1px solid var(--line);background:transparent;border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.webbtn:hover{color:var(--ink);background:var(--surface-2)}
+.webbtn.on{color:var(--accent);border-color:var(--accent)}
+.menu.wp{gap:10px;padding:12px;overflow-y:auto}
+.wp-head b{display:block;font-size:14px}
+.wp-head span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.wp-pre{display:flex;flex-wrap:wrap;gap:6px}
+.wp-pre button{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--ink)}
+.wp-pre button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.wp-g{border-top:1px solid var(--line);padding-top:8px}
+.wp-gt{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;padding:2px 0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink);text-align:left}
+.wp-gt .n{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
+.ck{flex:none;width:16px;height:16px;border:1.5px solid var(--muted);border-radius:4px;position:relative}
+[aria-checked="true"]>.ck{background:var(--ink);border-color:var(--ink)}
+[aria-checked="true"]>.ck::after{content:"";position:absolute;left:4.5px;top:1px;width:4px;height:8px;border:solid var(--bg);border-width:0 2px 2px 0;transform:rotate(45deg)}
+[aria-checked="mixed"]>.ck{border-color:var(--ink)}
+[aria-checked="mixed"]>.ck::after{content:"";position:absolute;left:3px;right:3px;top:6px;height:2px;background:var(--ink)}
+.wp-ms{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.wp-m{border:1px dashed var(--line);background:transparent;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:600;color:var(--muted);text-decoration:line-through}
+.wp-m[aria-pressed="true"]{border-style:solid;border-color:var(--s-a);background:var(--surface-2);color:var(--ink);text-decoration:none}
+.wp-foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
 
 /* day list */
 .dayhead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin:16px 0 8px;padding-top:14px;border-top:1px solid var(--line)}
