@@ -8,7 +8,7 @@
 
 **[Open the app →](https://1mach0.github.io/split-muscle-map/)**
 
-![Week view: body maps colored by how often each muscle is trained, next to the spiderweb chart](docs/week-v3.png)
+![Week view: body maps colored by how often each muscle is trained, next to the spiderweb chart with its weekly set target ring](docs/week-v4.png)
 
 Pick exercises for each day and front and back body maps light up the muscles you're hitting. Switch to the week view to see how many days each muscle gets trained, check the balance on a spiderweb chart, and compare two splits side by side before you commit to one.
 
@@ -34,21 +34,21 @@ It's a single static page: no account, no server, no install. Your splits stay i
 
 ### Plan a day
 
-Pick a day and tick exercises. Main targets light up bright, helpers dimmer, and the day is drawn in blue over the whole week on the spiderweb. Tap the **i** on any exercise for start and finish photos and instructions.
+Pick a day and tick exercises. Main targets light up bright, helpers dimmer, and the day is drawn in blue over the whole week on the spiderweb, with the shaded ring marking your weekly set target. Tap the **i** on any exercise for start and finish photos and instructions.
 
-![Day view: Thursday's main targets and helpers on the body maps and spiderweb, with an exercise's photos and instructions open](docs/day-v3.png)
+![Day view: Thursday's main targets and helpers on the body maps and spiderweb, with an exercise's photos and instructions open](docs/day-v4.png)
 
 ### See how it's done
 
 Tap a photo to open it full size. Use the arrows, the arrow keys or a swipe to flip between the start and finish positions.
 
-![Photo viewer: an exercise photo shown full size over the app](docs/photo-v3.png)
+![Photo viewer: an exercise photo shown full size over the app](docs/photo-v4.png)
 
 ### Compare two splits
 
 Put two splits side by side to see which one trains each muscle more often, with both drawn on one spiderweb.
 
-![Compare view: two splits' weekly body maps and an overlaid spiderweb chart](docs/compare-v3.png)
+![Compare view: two splits' weekly body maps and an overlaid spiderweb chart](docs/compare-v4.png)
 
 ## How the numbers work
 
