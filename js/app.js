@@ -347,10 +347,13 @@ function renderDays(){
   $('days').innerHTML=h;
 }
 function renderCats(){
-  const list=['All'].concat(CATS).concat(state.custom.length?['Custom']:[]);
-  $('cats').innerHTML=list.map(c=>'<button class="chip" type="button" data-cat="'+esc(c)+'" aria-pressed="'+(ui.cat===c)+'">'+esc(c)+'</button>').join('');
-  $('eqs').innerHTML=['All'].concat(EQS).map(c=>'<button class="chip" type="button" data-eq="'+esc(c)+'" aria-pressed="'+(ui.eq===c)+'">'+esc(c)+'</button>').join('');
-  document.querySelectorAll('[data-src]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.src===ui.src));
+  const cats=CATS.concat(state.custom.length?['Custom']:[]);
+  if(ui.cat!=='All'&&!cats.includes(ui.cat))ui.cat='All';
+  const fc=$('fCat'),fe=$('fEq'),fs=$('fSrc');
+  fc.innerHTML='<option value="All">All groups</option>'+cats.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+  if(!fe.options.length)fe.innerHTML='<option value="All">All equipment</option>'+EQS.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+  fc.value=ui.cat;fe.value=ui.eq;fs.value=ui.src;
+  fc.classList.toggle('on',ui.cat!=='All');fe.classList.toggle('on',ui.eq!=='All');fs.classList.toggle('on',ui.src!=='all');
 }
 function renderLibrary(){
   const day=curDay();
@@ -378,11 +381,10 @@ function renderLibrary(){
     const g=ui.focus?(e.p.includes(ui.focus)?'Main target':'Helps'):(e.custom?'Custom':e.cat);
     if(g!==last){h+='<div class="grp-h">'+esc(g)+'</div>';last=g}
     const on=inDay.has(e.id),open=ui.info===e.id;
-    const meta=[e.eq||'',e.staple?'<b>Staple</b>':'',e.lvl||''].filter(Boolean).join(' · ');
-    h+='<div class="ex"><button class="ex-add" type="button" data-ex="'+e.id+'" aria-pressed="'+on+'"><span class="tick" aria-hidden="true">✓</span><span class="ex-txt"><span class="ex-name">'+esc(e.name)+'</span><span class="ex-mus"><em>'+esc(mnames(e.p))+'</em>'+(e.s.length?' · '+esc(mnames(e.s)):'')+'</span>'+(meta?'<span class="ex-meta">'+meta+'</span>':'')+'</span></button>'+
+    h+='<div class="ex"><button class="ex-add" type="button" data-ex="'+e.id+'" aria-pressed="'+on+'"><span class="tick" aria-hidden="true">✓</span><span class="ex-txt"><span class="ex-name">'+esc(e.name)+'</span><span class="ex-mus"><em>'+esc(mnames(e.p))+'</em>'+(e.s.length?' · '+esc(mnames(e.s)):'')+'</span></span></button>'+
       ((e.how||e.nimg)?'<button class="ex-info" type="button" data-info="'+e.id+'" aria-expanded="'+open+'" aria-label="How to do '+esc(e.name)+'">i</button>':'')+
       (e.custom?'<button class="ex-del" type="button" data-delc="'+e.id+'" aria-label="Delete '+esc(e.name)+'">✕</button>':'')+'</div>';
-    if(open)h+='<div class="ex-how">'+(e.nimg?'<div class="ex-imgs" data-img-for="'+e.id+'">'+'<div class="ph-img"></div>'.repeat(Math.min(2,e.nimg))+'</div>':'')+(e.how?'<ol>'+e.how.split('\n').map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>':'')+'<p>'+esc([e.lvl,e.eq,(e.ref&&e.ref.toLowerCase()!==e.name.toLowerCase())?'Photos and steps: '+e.ref:'',e.nimg?'Tap a photo to enlarge':''].filter(Boolean).join(' · '))+'</p></div>';});
+    if(open)h+='<div class="ex-how">'+(e.nimg?'<div class="ex-imgs" data-img-for="'+e.id+'">'+'<div class="ph-img"></div>'.repeat(Math.min(2,e.nimg))+'</div>':'')+(e.how?'<ol>'+e.how.split('\n').map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>':'')+'<p>'+esc([e.staple?'Staple':'',e.lvl,e.eq,(e.ref&&e.ref.toLowerCase()!==e.name.toLowerCase())?'Photos and steps: '+e.ref:'',e.nimg?'Tap a photo to enlarge':''].filter(Boolean).join(' · '))+'</p></div>';});
   if(total>shown.length)h+='<button class="btn small more" type="button" id="moreEx">Show '+Math.min(150,total-shown.length)+' more of '+(total-shown.length)+'</button>';
   $('exlist').innerHTML=h||'<p class="empty">No exercises match. Try another search, or add your own below.</p>';
   const box=$('exlist').querySelector('[data-img-for]');
@@ -428,6 +430,49 @@ function renderDayPanel(){
     P.innerHTML=h;
   }
 }
+/* expanded detail card for the selected muscle */
+function suggestFor(m){
+  const pick=allEx().filter(e=>e.p.includes(m));
+  pick.sort((a,b)=>(b.staple?1:0)-(a.staple?1:0)||(a.p.length-b.p.length)||a.name.localeCompare(b.name));
+  return pick.slice(0,3);
+}
+function revealCard(){requestAnimationFrame(()=>{const c=document.querySelector('#muslist .mcard'),box=document.getElementById('muslist');if(!c||!box)return;
+  const cr=c.getBoundingClientRect(),br=box.getBoundingClientRect();
+  const top=Math.max(br.top,0),bottom=Math.min(br.bottom,innerHeight);
+  if(cr.top>=top&&cr.bottom<=bottom)return;
+  const want=cr.bottom>bottom?Math.min(cr.bottom-bottom+8,cr.top-top-8):cr.top-top-8;
+  const room=box.scrollHeight-box.clientHeight-box.scrollTop;
+  if(box.scrollHeight>box.clientHeight&&(want<0?box.scrollTop>0:room>0)){const d=want<0?Math.max(want,-box.scrollTop):Math.min(want,room);box.scrollBy({top:d,behavior:'smooth'});if(Math.abs(d)>=Math.abs(want))return}
+  c.scrollIntoView({block:'nearest',behavior:'smooth'})})}
+function muscleCard(m,mode,ws,s,lv){
+  const w=ws[m.id],st=wStatus(w),day=curDay();
+  const pillCls=mode==='day'?(s[m.id].p>0?'is-main':s[m.id].s>0?'is-help':'none'):st.cls;
+  const pillTxt=mode==='day'?(s[m.id].p>0?'Main':s[m.id].s>0?'Helper':'Not trained'):st.txt;
+  const valCls={ok:'ok',warn:'warn',bad:'bad',helper:'muted'}[st.cls];
+  const weekVal=w.days?w.days+'× · '+fmt(w.sets)+' sets':(w.indirect>0?'Helper · '+fmt(w.sets)+' sets':'Missed');
+  let stats='';
+  if(mode==='day'){const x=s[m.id],v=x.p||x.s?fmt(x.p+x.s/2)+' sets':'None';
+    stats='<div class="mc-stat"><span class="k">'+DAYS_LONG[state.view]+'</span><span class="v">'+v+'</span></div>';}
+  else stats='<div class="mc-stat"><span class="k">Main target on</span><span class="v">'+(w.dayList.length?w.dayList.join(', '):'No days')+'</span></div>';
+  stats+='<div class="mc-stat"><span class="k">This week</span><span class="v '+valCls+'">'+weekVal+'</span></div>';
+  // who trains it
+  let rows=[];
+  if(mode==='day'){day.items.forEach(it=>{const e=EXM[it.ex];if(!e)return;const main=e.p.includes(m.id),help=e.s.includes(m.id);if(main||help)rows.push({main,name:e.name,n:it.sets+' set'+(it.sets>1?'s':'')+(main?'':', counts as '+fmt(it.sets/2))})})}
+  else{const agg={};S().days.forEach((d,i)=>d.items.forEach(it=>{const e=EXM[it.ex];if(!e)return;const main=e.p.includes(m.id),help=e.s.includes(m.id);if(!main&&!help)return;
+      const k=e.id;agg[k]=agg[k]||{main,name:e.name,days:[],sets:0};agg[k].days.push(DAYS[i]);agg[k].sets+=it.sets}));
+    rows=Object.values(agg).sort((a,b)=>(b.main-a.main)||b.sets-a.sets).map(r=>({main:r.main,name:r.name,n:r.days.join(', ')+' · '+r.sets+' sets'}))}
+  let list='';
+  if(rows.length)list='<div class="mc-ex"><span class="mc-k">Trained by</span>'+rows.map(r=>'<div class="mc-row"><span class="tag '+(r.main?'main':'help')+'">'+(r.main?'Main':'Helper')+'</span><span class="nm">'+esc(r.name)+'</span><span class="n">'+esc(r.n)+'</span></div>').join('')+'</div>';
+  const needs=mode==='day'?!(s[m.id].p>0):w.days===0;
+  if(needs){const sug=suggestFor(m.id);
+    if(sug.length){list+='<div class="mc-ex"><span class="mc-k">'+(mode==='day'?'Add one to '+DAYS_LONG[state.view]:'Exercises that train it')+'</span>'+sug.map(e=>'<div class="mc-row"><span class="nm">'+esc(e.name)+'</span>'+(mode==='day'?'<button class="mc-add" type="button" data-ex="'+e.id+'">+ Add</button>':'<span class="n">'+esc(e.eq||'')+'</span>')+'</div>').join('')+(mode==='day'?'':'<p class="mc-note">Pick a day to add one.</p>')+'</div>'}}
+  else if(!rows.length)list='<p class="mc-note">Nothing trains it'+(mode==='day'?' on '+DAYS_LONG[state.view]:' this week')+'.</p>';
+  const count=allEx().filter(e=>e.p.includes(m.id)||e.s.includes(m.id)).length;
+  return '<div class="mcard" role="region" aria-label="'+esc(m.name)+' details">'+
+    '<div class="mc-head"><span class="sw '+(lv[m.id]||'')+'"></span><b>'+m.name+'</b><span class="pill '+pillCls+'">'+pillTxt+'</span><button class="mc-x" type="button" data-focus="'+m.id+'" aria-label="Close '+esc(m.name)+' details">✕</button></div>'+
+    '<div class="mc-sci">'+esc(m.sci)+'</div><div class="mc-stats">'+stats+'</div>'+list+
+    '<div class="mc-foot">Exercise list filtered to <b>'+esc(m.name.toLowerCase())+'</b> · '+count+' exercises</div></div>';
+}
 function renderMuscles(ws){
   const {mode,s,lv}=cur;
   let h='';
@@ -444,15 +489,16 @@ function renderMuscles(ws){
     h+='<div class="mgroup"><h3>'+g+'</h3>';
     MUSCLES.filter(m=>m.g===g).forEach(m=>{
       const open=ui.focus===m.id;let pill='',sets='',det='';
-      if(mode==='week'){const w=ws[m.id],st=wStatus(w);pill='<span class="pill '+st.cls+'">'+st.txt+'</span>';sets=fmt(w.sets)+' sets';
+      if(open&&mode!=='preview'){h+=muscleCard(m,mode,ws,s,lv);return}
+      let tip=m.name+' ('+m.sci+')';
+      if(mode==='week'){const w=ws[m.id],st=wStatus(w);pill='<span class="pill '+st.cls+'">'+(st.cls==='ok'||st.cls==='warn'?w.days+'×':st.cls==='helper'?'Helper':'Missed')+'</span>';sets=fmt(w.sets)+' sets';tip+=': '+st.txt+', '+sets+' a week';
         det=(w.dayList.length?'Main target on <b>'+w.dayList.join(', ')+'</b>. ':'')+(w.helperList.length?'Helper on '+w.helperList.join(', ')+'. ':'')+'Sets count helpers as half. ';}
       else if(mode==='day'){const x=s[m.id];
         pill=x.p>0?'<span class="pill is-main">Main</span>':x.s>0?'<span class="pill is-help">Helper</span>':'<span class="pill none">—</span>';
-        sets=(x.p||x.s)?fmt(x.p+x.s/2)+' sets':'';
+        sets=(x.p||x.s)?fmt(x.p+x.s/2)+' sets':'';tip+=': '+(x.p>0?'main target':x.s>0?'helper':'not trained')+(sets?', '+sets:'');
         det=(x.exP.length?'Main: <b>'+esc(x.exP.join(', '))+'</b>. ':'')+(x.exS.length?'Helper: '+esc(x.exS.join(', '))+'. ':'')+((x.p||x.s)?'':'Not trained on '+DAYS_LONG[state.view]+'. ');}
       else{const l=lv[m.id];pill=l==='p'?'<span class="pill is-main">Main</span>':l==='s'?'<span class="pill is-help">Helper</span>':'<span class="pill none">—</span>';}
-      h+='<button class="mrow" type="button" data-focus="'+m.id+'" aria-expanded="'+open+'"><span class="sw '+(lv[m.id]||'')+'"></span><span style="min-width:0"><span class="mn">'+m.name+'</span><span class="ms">'+esc(m.sci)+'</span></span><span class="rt">'+pill+(sets?'<span class="sets">'+sets+'</span>':'')+'</span></button>';
-      if(open&&mode!=='preview')h+='<div class="mdetail">'+det+'The library is now filtered to exercises for this muscle.</div>';
+      h+='<button class="mrow" type="button" data-focus="'+m.id+'" aria-expanded="'+open+'" title="'+esc(tip)+'"><span class="sw '+(lv[m.id]||'')+'"></span><span class="mn">'+m.name.replace('Brachioradialis','Brachio\u00ADradialis')+'</span>'+pill+'</button>';
     });
     h+='</div>';});
   $('muslist').innerHTML=h;
@@ -527,7 +573,7 @@ document.addEventListener('click',ev=>{
     render();return}
   if(t.classList.contains('mus')){
     if(t.closest('svg').dataset.who!=='main')return;
-    const m=t.getAttribute('data-m');ui.focus=ui.focus===m?null:m;if(ui.focus)ui.cat='All';render();return}
+    const m=t.getAttribute('data-m');ui.focus=ui.focus===m?null:m;if(ui.focus)ui.cat='All';render();revealCard();return}
   if(t.dataset.split!==undefined){state.active=+t.dataset.split;if(isCmp())state.view='week';ui.focus=null;ui.preview=null;save();render();return}
   if(t.id==='newSplit'){state.splits.push({id:uid(),name:nextSplitName(),days:blankDays()});state.active=state.splits.length-1;state.view=0;ui.focus=null;save();render();toast('New empty split. Pick a day and tick exercises.');return}
   if(t.id==='cmpTab'){if(state.splits.length<2){toast('Make a second split first, then compare them.');return}
@@ -552,7 +598,7 @@ document.addEventListener('click',ev=>{
   if(t.dataset.delc){const id=t.dataset.delc;state.custom=state.custom.filter(c=>c.id!==id);state.splits.forEach(s=>s.days.forEach(d=>d.items=d.items.filter(i=>i.ex!==id)));rebuildEx();save();render();return}
   if(t.dataset.sets!==undefined){const it=curDay().items[+t.dataset.sets];it.sets=Math.max(1,Math.min(10,it.sets+(+t.dataset.d)));save();render();return}
   if(t.dataset.rm!==undefined){curDay().items.splice(+t.dataset.rm,1);save();render();return}
-  if(t.dataset.focus){ui.focus=ui.focus===t.dataset.focus?null:t.dataset.focus;if(ui.focus)ui.cat='All';render();return}
+  if(t.dataset.focus){ui.focus=ui.focus===t.dataset.focus?null:t.dataset.focus;if(ui.focus)ui.cat='All';render();revealCard();return}
   if(t.dataset.mt){const order=['','main','help'];t.dataset.state=order[(order.indexOf(t.dataset.state)+1)%3];return}
   if(t.id==='clearDay'){arm(t,'Tap again to clear',()=>{curDay().items=[];save();render()});return}
   if(t.id==='pdfBtn'){exportPDF();return}
@@ -574,6 +620,9 @@ document.getElementById('lb').addEventListener('click',ev=>{
   lbEl.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});
   lbEl.addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)stepLB(dx<0?1:-1);x0=null});})();
 $('q').addEventListener('input',e=>{ui.q=e.target.value;ui.limit=150;renderLibrary()});
+$('fCat').addEventListener('change',e=>{ui.cat=e.target.value;ui.limit=150;renderCats();renderLibrary()});
+$('fEq').addEventListener('change',e=>{ui.eq=e.target.value;ui.limit=150;renderCats();renderLibrary()});
+$('fSrc').addEventListener('change',e=>{ui.src=e.target.value;ui.limit=150;renderCats();renderLibrary()});
 $('splitName').addEventListener('input',e=>{S().name=e.target.value;save();renderTabs()});
 $('splitName').addEventListener('blur',e=>{if(!S().name.trim()){S().name=nextSplitName();e.target.value=S().name;save();renderTabs()}});
 document.addEventListener('input',e=>{if(e.target.classList.contains('dayname')&&isDay()){curDay().name=e.target.value;save();renderDays();renderMap(weekStats(S()));renderRadar()}});

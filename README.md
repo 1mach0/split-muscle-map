@@ -8,7 +8,7 @@
 
 **[Open the app →](https://1mach0.github.io/split-muscle-map/)**
 
-![Week view: body maps colored by how often each muscle is trained, next to the spiderweb chart](docs/week.png)
+![Week view: body maps colored by how often each muscle is trained, next to the spiderweb chart](docs/week-v3.png)
 
 Pick exercises for each day and front and back body maps light up the muscles you're hitting. Switch to the week view to see how many days each muscle gets trained, check the balance on a spiderweb chart, and compare two splits side by side before you commit to one.
 
@@ -19,12 +19,12 @@ It's a single static page: no account, no server, no install. Your splits stay i
 - **Body maps:** front and back views with 23 muscles. A day shows main targets and helpers. The week shows how often each muscle is a main target: 1×, 2×, 3×+, helper only or missed.
 - **Spiderweb chart:** weekly sets or days per week, by muscle or by muscle group. Select a day to overlay it on the whole week.
 - **794 exercises:** 75 hand-checked staples plus 719 from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), all with start and finish photos and step-by-step instructions. Tap a photo to see it full size.
-- **Find the right exercise:** search by name or muscle, and filter by muscle group, equipment (barbell, dumbbell, cable, machine, body only, kettlebell, bands) or source. Tap a muscle on the map to list every exercise that trains it.
+- **Find the right exercise:** search by name or muscle, and narrow it down with the muscle group, equipment and source dropdowns. Tap a muscle on the map to list every exercise that trains it.
 - **Multiple splits:** keep as many as you like in tabs. Duplicate one to try a variation.
 - **Compare:** two splits side by side, with body maps, an overlaid spiderweb and a muscle-by-muscle table of days and sets.
 - **PDF export:** body maps, spiderweb, every day with its own body maps and exercise table, and a full muscle coverage table. In compare view it exports the comparison.
 - **Custom exercises:** add your own and tag the muscles they work.
-- **Fits your screen:** on wide monitors the body map and spiderweb sit side by side; on laptops and phones the layout stacks.
+- **Fits your screen:** on wide monitors the body map and spiderweb sit side by side, and the exercise and muscle panels stay in view while you scroll. On phones everything stacks.
 - **Light and dark mode**, following your system setting.
 
 ## Screenshots
@@ -33,19 +33,19 @@ It's a single static page: no account, no server, no install. Your splits stay i
 
 Pick a day and tick exercises. Main targets light up bright, helpers dimmer, and the day is drawn in blue over the whole week on the spiderweb. Tap the **i** on any exercise for start and finish photos and instructions.
 
-![Day view: Thursday's main targets and helpers on the body maps and spiderweb, with an exercise's photos and instructions open](docs/day.png)
+![Day view: Thursday's main targets and helpers on the body maps and spiderweb, with an exercise's photos and instructions open](docs/day-v3.png)
 
 ### See how it's done
 
 Tap a photo to open it full size. Use the arrows, the arrow keys or a swipe to flip between the start and finish positions.
 
-![Photo viewer: an exercise photo shown full size over the app](docs/photo.png)
+![Photo viewer: an exercise photo shown full size over the app](docs/photo-v3.png)
 
 ### Compare two splits
 
 Put two splits side by side to see which one trains each muscle more often, with both drawn on one spiderweb.
 
-![Compare view: two splits' weekly body maps and an overlaid spiderweb chart](docs/compare.png)
+![Compare view: two splits' weekly body maps and an overlaid spiderweb chart](docs/compare-v3.png)
 
 ## How the numbers work
 

@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>html{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
-<link rel="stylesheet" href="css/styles.css?v=2026.10.06e">
+<link rel="stylesheet" href="css/styles.css?v=2026.10.06g">
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js" defer></script>
 </head>
@@ -36,12 +36,14 @@
       <div class="layout">
         <section class="panel lib" aria-labelledby="libH">
           <div class="ph"><h2 id="libH">Exercises</h2><p class="hint" id="libHint"></p></div>
-          <input class="search" id="q" type="search" placeholder="Search exercises or muscles" autocomplete="off">
-          <div class="seg srcseg" role="group" aria-label="Exercise source" id="src"><button type="button" data-src="all">All</button><button type="button" data-src="staple">Staples</button><button type="button" data-src="db">Database</button></div>
-          <div class="flabel">Muscle group</div>
-          <div class="chips" id="cats"></div>
-          <div class="flabel">Equipment</div>
-          <div class="chips" id="eqs"></div>
+          <div class="frow frow-search">
+            <input class="search" id="q" type="search" placeholder="Search" autocomplete="off">
+            <select class="fsel" id="fSrc" aria-label="Source"><option value="all">All sources</option><option value="staple">Staples</option><option value="db">Database</option></select>
+          </div>
+          <div class="frow">
+            <select class="fsel" id="fCat" aria-label="Muscle group"></select>
+            <select class="fsel" id="fEq" aria-label="Equipment"></select>
+          </div>
           <div id="focusbar"></div>
           <div class="exlist" id="exlist"></div>
           <details class="custom" id="custom">
@@ -136,7 +138,7 @@
   <figure class="lb-fig"><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
   <button class="lb-btn lb-nav lb-next" type="button" id="lbNext" aria-label="Next photo">›</button>
 </div>
-<script src="js/data/exercise-db.js?v=2026.10.06e"></script>
-<script src="js/app.js?v=2026.10.06e"></script>
+<script src="js/data/exercise-db.js?v=2026.10.06g"></script>
+<script src="js/app.js?v=2026.10.06g"></script>
 </body>
 </html>
