@@ -4,7 +4,7 @@ Thanks for helping out. This is a small project, so the process is light.
 
 ## Reporting a wrong muscle mapping
 
-Most database exercises had their muscles converted automatically, so some will be off. Use the **Wrong muscle mapping** issue template and include:
+Most database exercises had their muscles converted automatically, so some will be off. [Open an issue](https://github.com/1mach0/split-muscle-map/issues) titled "Wrong muscles: <exercise name>" and include:
 
 - the exercise name as it appears in the app
 - the muscles it shows now

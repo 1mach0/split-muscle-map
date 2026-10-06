@@ -24,13 +24,21 @@ It's a single static page: no account, no server, no install. Your splits stay i
 - **Compare:** two splits side by side, with body maps, an overlaid spiderweb and a muscle-by-muscle table of days and sets.
 - **PDF export:** body maps, spiderweb, every day with its own body maps and exercise table, and a full muscle coverage table. In compare view it exports the comparison.
 - **Custom exercises:** add your own and tag the muscles they work.
-- **Light and dark mode**, following your system setting. Works on phones.
+- **Light and dark mode**, following your system setting. Works on phones too.
 
-| Pick a day, see what it hits | Compare two splits |
-| --- | --- |
-| ![Day view with an exercise's photos and instructions open](docs/screenshot-day.png) | ![Compare view with two splits and an overlaid spiderweb](docs/screenshot-compare.png) |
+## Screenshots
 
-<p align="center"><img src="docs/screenshot-mobile.png" width="320" alt="Day view on a phone in dark mode"></p>
+### Plan a day
+
+Pick a day and tick exercises. Main targets light up bright, helpers dimmer. Open any database exercise for start and finish photos and instructions.
+
+![Day view: Thursday's main targets and helpers on the body maps, with an exercise's photos and instructions open](docs/screenshot-day.png)
+
+### Compare two splits
+
+Put two splits side by side to see which one trains each muscle more often, with both drawn on one spiderweb.
+
+![Compare view: two splits' weekly body maps and an overlaid spiderweb chart](docs/screenshot-compare.png)
 
 ## How the numbers work
 
@@ -82,7 +90,7 @@ The 75 staples were mapped to muscles by hand.
 
 Free Exercise DB only uses about 17 broad labels ("shoulders", "chest", "middle back"). `tools/build_exercise_db.py` converts them to the map's 23 muscles using the exercise name, so "lateral raise" becomes side delts and "incline" becomes upper chest. Most come out right, but some won't.
 
-If you spot a wrong one, please [open an issue](https://github.com/1mach0/split-muscle-map/issues/new?template=wrong-muscle-mapping.md) or fix the rule in that script.
+If you spot a wrong one, please [open an issue](https://github.com/1mach0/split-muscle-map/issues) with the exercise name and the muscles it should show, or fix the rule in that script.
 
 To refresh the data from the source:
 
