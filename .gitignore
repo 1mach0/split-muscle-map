@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local copy of the raw dataset used by tools/build_exercise_db.py
+exercises.json
+
+# Editors
+.vscode/
+.idea/

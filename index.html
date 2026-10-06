@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Split Muscle Map</title>
+<meta name="description" content="Build and compare weekly training splits from 790+ exercises. Body maps and a spiderweb chart show which muscles each split hits, with a PDF export.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='10' width='5' height='12' rx='1.5' fill='%23c2263a'/%3E%3Crect x='24' y='10' width='5' height='12' rx='1.5' fill='%23c2263a'/%3E%3Crect x='8' y='14.5' width='16' height='3' fill='%2316202a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>html{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Split Muscle Map</h1>
+    <button class="btn primary" id="pdfBtn" type="button">Save as PDF</button>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="Splits"></div>
+
+  <div id="editView">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="splitbar">
+        <input class="splitname" id="splitName" type="text" maxlength="40" aria-label="Split name">
+        <button class="btn small" type="button" id="dupSplit">Duplicate</button>
+        <button class="btn small" type="button" id="delSplit">Delete split</button>
+      </div>
+      <div class="cover" id="cover" aria-live="polite"></div>
+      <nav class="days" id="days" aria-label="Days"></nav>
+
+      <div class="layout">
+        <section class="panel lib" aria-labelledby="libH">
+          <div class="ph"><h2 id="libH">Exercises</h2><p class="hint" id="libHint"></p></div>
+          <input class="search" id="q" type="search" placeholder="Search exercises or muscles" autocomplete="off">
+          <div class="seg srcseg" role="group" aria-label="Exercise source" id="src"><button type="button" data-src="all">All</button><button type="button" data-src="staple">Staples</button><button type="button" data-src="db">Database</button></div>
+          <div class="flabel">Muscle group</div>
+          <div class="chips" id="cats"></div>
+          <div class="flabel">Equipment</div>
+          <div class="chips" id="eqs"></div>
+          <div id="focusbar"></div>
+          <div class="exlist" id="exlist"></div>
+          <details class="custom" id="custom">
+            <summary>Add your own exercise</summary>
+            <form class="cform" id="cform">
+              <div><label for="cname">Name</label><input class="search" id="cname" type="text" placeholder="e.g. Cable Y-raise"></div>
+              <div><label>Muscles: tap once for main target, twice for helper</label><div class="mgrid" id="cmus"></div></div>
+              <div><button class="btn primary" type="submit" id="csave">Save exercise</button></div>
+            </form>
+          </details>
+          <p class="credit">Database exercises come from <a href="https://github.com/yuhonas/free-exercise-db" target="_blank" rel="noopener">Free Exercise DB</a> (public domain). Their muscle labels were converted to this map's muscles, so check any that look off.</p>
+        </section>
+
+        <section class="panel map" aria-label="Muscle map">
+          <div class="caption"><div class="t" id="capT"></div><div class="legend" id="legend"></div></div>
+          <div class="figs">
+            <div class="fig"><svg id="front" data-who="main" viewBox="0 0 200 432" role="img" aria-label="Front view muscle map"></svg><div class="lab">Front</div></div>
+            <div class="fig"><svg id="back" data-who="main" viewBox="0 0 200 432" role="img" aria-label="Back view muscle map"></svg><div class="lab">Back</div></div>
+          </div>
+          <div class="radar">
+            <div class="rhead">
+              <h2>Spiderweb</h2>
+              <div class="rctl">
+                <div class="seg" role="group" aria-label="Spokes"><button type="button" data-rax="muscles">Muscles</button><button type="button" data-rax="groups">Groups</button></div>
+                <div class="seg" role="group" aria-label="Measure"><button type="button" data-rmet="sets">Sets / week</button><button type="button" data-rmet="days">Days / week</button></div>
+              </div>
+            </div>
+            <p class="rsub" id="rsub"></p>
+            <div class="rlegend" id="rlegend"></div>
+            <div class="rbox"><svg id="radar" viewBox="0 0 600 470" role="img" aria-label="Spiderweb chart of training balance"></svg></div>
+          </div>
+          <div id="dayPanel"></div>
+        </section>
+
+        <section class="panel mus" aria-labelledby="musH">
+          <div class="ph"><h2 id="musH">Muscles</h2><p class="hint" id="musHint"></p></div>
+          <div id="muslist"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <section id="cmpView" class="panel" hidden aria-label="Compare splits">
+    <div class="cmphead">
+      <h2>Compare</h2>
+      <select id="cmpA" aria-label="First split"></select>
+      <span class="vs">vs</span>
+      <select id="cmpB" aria-label="Second split"></select>
+    </div>
+    <div class="cmpgrid">
+      <div class="cmpcol">
+        <h3><i style="background:var(--s-a)"></i><span id="cANm"></span></h3>
+        <div class="cover" id="cACov"></div>
+        <div class="figs">
+          <div class="fig"><svg id="cA-front" data-who="a" viewBox="0 0 200 432" role="img" aria-label="First split, front view"></svg><div class="lab">Front</div></div>
+          <div class="fig"><svg id="cA-back" data-who="a" viewBox="0 0 200 432" role="img" aria-label="First split, back view"></svg><div class="lab">Back</div></div>
+        </div>
+      </div>
+      <div class="cmpcol">
+        <h3><i style="background:var(--s-b)"></i><span id="cBNm"></span></h3>
+        <div class="cover" id="cBCov"></div>
+        <div class="figs">
+          <div class="fig"><svg id="cB-front" data-who="b" viewBox="0 0 200 432" role="img" aria-label="Second split, front view"></svg><div class="lab">Front</div></div>
+          <div class="fig"><svg id="cB-back" data-who="b" viewBox="0 0 200 432" role="img" aria-label="Second split, back view"></svg><div class="lab">Back</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="legend" style="margin-top:10px"><span><i style="background:var(--w0)"></i>Helper only</span><span><i style="background:var(--w1)"></i>1×</span><span><i style="background:var(--w2)"></i>2×</span><span><i style="background:var(--w3)"></i>3×+ a week as main target</span><span><i style="background:var(--muscle)"></i>Missed</span></div>
+    <div class="radar">
+      <div class="rhead">
+        <h2>Spiderweb</h2>
+        <div class="rctl">
+          <div class="seg" role="group" aria-label="Spokes"><button type="button" data-rax="muscles">Muscles</button><button type="button" data-rax="groups">Groups</button></div>
+          <div class="seg" role="group" aria-label="Measure"><button type="button" data-rmet="sets">Sets / week</button><button type="button" data-rmet="days">Days / week</button></div>
+        </div>
+      </div>
+      <p class="rsub" id="crsub"></p>
+      <div class="rlegend" id="crlegend"></div>
+      <div class="rbox"><svg id="cmpRadar" viewBox="0 0 600 470" role="img" aria-label="Spiderweb comparing two splits"></svg></div>
+    </div>
+    <div class="radar">
+      <div class="rhead"><h2>Muscle by muscle</h2><p class="hint">Change shows how the second split differs from the first</p></div>
+      <div class="tblwrap" id="cmpTable"></div>
+    </div>
+  </section>
+</div>
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<script src="js/data/exercise-db.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
