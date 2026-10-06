@@ -158,7 +158,8 @@ const KEY='splitmap.v2',OLDKEY='splitmap.v1';
 const uid=()=>'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const defaultDays=()=>DEFAULT.map(([n,l])=>({name:n,items:l.map(x=>({ex:slug(x),sets:2}))}));
 const blankDays=()=>DAYS.map(()=>({name:'',items:[]}));
-function fresh(custom){return{splits:[{id:uid(),name:'Split 1',days:defaultDays()}],active:0,view:'week',custom:custom||[],cmpA:0,cmpB:1}}
+const DEFAULT_TARGET={min:10,max:20};
+function fresh(custom){return{splits:[{id:uid(),name:'Split 1',days:defaultDays()}],active:0,view:'week',custom:custom||[],cmpA:0,cmpB:1,targets:{min:DEFAULT_TARGET.min,max:DEFAULT_TARGET.max,per:{}}}}
 function load(){
   try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.splits)&&s.splits.length)return s}catch(e){}
   try{const o=JSON.parse(localStorage.getItem(OLDKEY));if(o&&Array.isArray(o.days)&&o.days.length===7){const f=fresh(o.custom);f.splits[0].days=o.days;return f}}catch(e){}
@@ -167,6 +168,12 @@ function load(){
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 let state=load()||fresh();
 if(!Array.isArray(state.custom))state.custom=[];
+if(!state.targets||typeof state.targets!=='object')state.targets={min:DEFAULT_TARGET.min,max:DEFAULT_TARGET.max,per:{}};
+if(!state.targets.per)state.targets.per={};
+/* weekly set target for a muscle: its own override, else the global default */
+function tgt(m){const o=state.targets.per[m];return{min:o&&o.min!=null?o.min:state.targets.min,max:o&&o.max!==undefined?o.max:state.targets.max,own:!!o}}
+function tgtState(sets,t){return sets<t.min?'under':(t.max&&sets>t.max?'over':'in')}
+const clampN=(v,lo,hi)=>{v=Math.round(+v);return isFinite(v)?Math.min(hi,Math.max(lo,v)):lo};
 state.active=Math.min(Math.max(0,state.active|0),state.splits.length-1);
 if(state.view==='compare'&&state.splits.length<2)state.view='week';
 let ui={q:'',cat:'All',eq:'All',src:'all',info:null,limit:150,focus:null,preview:null,rax:(window.innerWidth<560)?'groups':'muscles',rmet:'sets'};
@@ -289,7 +296,8 @@ function drawRadar(svg,axes,series,opt){
   opt=opt||{};
   svg.innerHTML='';svg.classList.toggle('grp',opt.rax==='groups');
   const W=600,H=470,cx=W/2,cy=H/2+4,R=opt.rax==='groups'?176:168,n=axes.length,sets=opt.rmet==='sets';
-  const max=Math.max(0,...series.flatMap(s=>s.vals.map(v=>v||0)));
+  const tg=opt.target||null;
+  const max=Math.max(0,...series.flatMap(s=>s.vals.map(v=>v||0)),...(tg?tg.map(t=>t.min||0):[]));
   let step,top;
   if(sets){step=max<=8?2:max<=16?4:max<=30?5:10;top=Math.max(step,Math.ceil(max/step)*step)}
   else{step=1;top=Math.max(3,Math.ceil(max))}
@@ -301,6 +309,12 @@ function drawRadar(svg,axes,series,opt){
     const [tx,ty]=pt(0,v);const t=el('text',{x:(tx+4).toFixed(1),y:(ty-3).toFixed(1),class:'r-tick'});t.textContent=fmt(v)+(v>=top-1e-9?(sets?' sets':' days'):'');svg.appendChild(t);
   }
   axes.forEach((a,i)=>{const [x,y]=pt(i,top);svg.appendChild(el('line',{x1:cx,y1:cy,x2:x.toFixed(1),y2:y.toFixed(1),class:'r-spoke'}))});
+  if(tg){
+    const hi=tg.map(t=>Math.min(t.max||t.min,top)),lo=tg.map(t=>Math.min(t.min,top));
+    const ring=vals=>vals.map((v,i)=>pt(i,v).map(x=>x.toFixed(1)).join(' ')).join(' L');
+    if(tg.some(t=>t.max&&t.max>t.min))svg.appendChild(el('path',{d:'M'+ring(hi)+' Z M'+ring(lo)+' Z','fill-rule':'evenodd',class:'r-tgt'}));
+    svg.appendChild(el('polygon',{points:poly(lo),class:'r-tgt-line'}));
+  }
   if(opt.focus){const i=axes.findIndex(a=>a.key===opt.focus);if(i>=0){const [x,y]=pt(i,top);svg.appendChild(el('line',{x1:cx,y1:cy,x2:x.toFixed(1),y2:y.toFixed(1),class:'r-focus'}))}}
   series.forEach(s=>svg.appendChild(el('polygon',{points:poly(s.vals),class:'r-'+s.cls})));
   series.forEach(s=>s.vals.forEach((v,i)=>{if(s.cls==='b'&&!(v>0)&&!opt.dotsAtZero)return;const [x,y]=pt(i,v);svg.appendChild(el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:4,class:'r-dot '+s.cls}))}));
@@ -326,9 +340,31 @@ function renderRadar(){
   const axes=radarAxes(S(),day?day.items:null,ui.rax,ui.rmet);
   const series=[{vals:axes.map(a=>a.week),cls:'a',name:'Whole week'}];
   if(showDay)series.push({vals:axes.map(a=>a.day),cls:'b',name:DAYS[state.view]});
-  drawRadar($('radar'),axes,series,{rax:ui.rax,rmet:ui.rmet,marks:true,hit:true,focus:ui.rax==='muscles'?ui.focus:null});
+  const target=radarTarget(axes);
+  drawRadar($('radar'),axes,series,{rax:ui.rax,rmet:ui.rmet,marks:true,hit:true,focus:ui.rax==='muscles'?ui.focus:null,target});
   $('rsub').textContent=(sets?'Weekly sets for each '+(ui.rax==='muscles'?'muscle':'muscle group')+'. Helpers count as half a set.':'Days per week each '+(ui.rax==='muscles'?'muscle':'group')+' is a main target.')+' A rounder web means a more balanced split. Spokes marked ! are never a main target.';
-  $('rlegend').innerHTML=showDay?'<span><i style="background:var(--s-a)"></i>Whole week</span><span><i style="background:var(--s-b)"></i>'+DAYS[state.view]+(day.name?' · '+esc(day.name):'')+'</span>':'';
+  $('rlegend').innerHTML=(showDay?'<span><i style="background:var(--s-a)"></i>Whole week</span><span><i style="background:var(--s-b)"></i>'+DAYS[state.view]+(day.name?' · '+esc(day.name):'')+'</span>':'')+targetLegend(target);
+  renderTargetCtl();
+}
+/* target band for the spiderweb: per-muscle sets, 2 days a week for frequency, none for group sets */
+function radarTarget(axes){
+  if(ui.rmet==='days')return axes.map(()=>({min:2,max:null}));
+  if(ui.rax!=='muscles')return null;
+  return axes.map(a=>tgt(a.key));
+}
+function targetLegend(target){
+  if(!target)return ui.rmet==='sets'?'<span class="tgt-note">Set targets show in the Muscles view</span>':'';
+  if(ui.rmet==='days')return '<span><i class="tgt-sw"></i>Target: main target 2× a week</span>';
+  const own=Object.keys(state.targets.per).length;
+  return '<span><i class="tgt-sw"></i>Target: '+state.targets.min+(state.targets.max?'–'+state.targets.max:'+')+' sets a week'+(own?' ('+own+' muscle'+(own>1?'s':'')+' custom)':'')+'</span>';
+}
+function renderTargetCtl(){
+  const box=$('tgtCtl');if(!box)return;
+  if(!box.childElementCount)box.innerHTML='<label for="tgtMin">Weekly set target</label><input class="num" id="tgtMin" type="number" min="0" max="60" step="1" aria-label="Minimum weekly sets"><span>to</span><input class="num" id="tgtMax" type="number" min="0" max="80" step="1" aria-label="Maximum weekly sets"><span>sets per muscle</span><button class="linkbtn" type="button" id="tgtResetAll" hidden></button>';
+  const a=$('tgtMin'),b=$('tgtMax'),r=$('tgtResetAll'),own=Object.keys(state.targets.per).length;
+  if(document.activeElement!==a)a.value=state.targets.min;
+  if(document.activeElement!==b)b.value=state.targets.max==null?'':state.targets.max;
+  r.hidden=!own;if(!r.dataset.armed)r.textContent='Reset '+own+' custom';
 }
 
 /* ---------- edit view render ---------- */
@@ -455,6 +491,11 @@ function muscleCard(m,mode,ws,s,lv){
     stats='<div class="mc-stat"><span class="k">'+DAYS_LONG[state.view]+'</span><span class="v">'+v+'</span></div>';}
   else stats='<div class="mc-stat"><span class="k">Main target on</span><span class="v">'+(w.dayList.length?w.dayList.join(', '):'No days')+'</span></div>';
   stats+='<div class="mc-stat"><span class="k">This week</span><span class="v '+valCls+'">'+weekVal+'</span></div>';
+  const t=tgt(m.id),ts=tgtState(w.sets,t),cap=Math.max(t.max||t.min,w.sets,1)*1.1;
+  const tmsg=ts==='under'?fmt(t.min-w.sets)+' short of '+t.min:ts==='over'?fmt(w.sets-t.max)+' over '+t.max:'In range';
+  const tgtRow='<div class="mc-tgt"><div class="mc-tgt-top"><span class="mc-k">Weekly set target</span><span class="mc-tgt-msg '+ts+'">'+fmt(w.sets)+' sets · '+tmsg+'</span></div>'+
+    '<div class="tbar" role="img" aria-label="'+fmt(w.sets)+' of '+t.min+(t.max?' to '+t.max:'')+' sets"><span class="tband" style="left:'+(t.min/cap*100).toFixed(1)+'%;width:'+(((t.max||t.min)-t.min)/cap*100).toFixed(1)+'%"></span><span class="tfill '+ts+'" style="width:'+Math.min(100,w.sets/cap*100).toFixed(1)+'%"></span><span class="tmark" style="left:'+(t.min/cap*100).toFixed(1)+'%"></span></div>'+
+    '<div class="mc-tgt-edit"><input class="num" type="number" min="0" max="60" step="1" value="'+t.min+'" data-tmin="'+m.id+'" aria-label="Minimum weekly sets for '+esc(m.name)+'"><span>to</span><input class="num" type="number" min="0" max="80" step="1" value="'+(t.max||'')+'" data-tmax="'+m.id+'" aria-label="Maximum weekly sets for '+esc(m.name)+'"><span>sets</span>'+(t.own?'<button class="linkbtn" type="button" data-treset="'+m.id+'">Use default</button>':'<span class="mc-tgt-def">default</span>')+'</div></div>';
   // who trains it
   let rows=[];
   if(mode==='day'){day.items.forEach(it=>{const e=EXM[it.ex];if(!e)return;const main=e.p.includes(m.id),help=e.s.includes(m.id);if(main||help)rows.push({main,name:e.name,n:it.sets+' set'+(it.sets>1?'s':'')+(main?'':', counts as '+fmt(it.sets/2))})})}
@@ -470,7 +511,7 @@ function muscleCard(m,mode,ws,s,lv){
   const count=allEx().filter(e=>e.p.includes(m.id)||e.s.includes(m.id)).length;
   return '<div class="mcard" role="region" aria-label="'+esc(m.name)+' details">'+
     '<div class="mc-head"><span class="sw '+(lv[m.id]||'')+'"></span><b>'+m.name+'</b><span class="pill '+pillCls+'">'+pillTxt+'</span><button class="mc-x" type="button" data-focus="'+m.id+'" aria-label="Close '+esc(m.name)+' details">✕</button></div>'+
-    '<div class="mc-sci">'+esc(m.sci)+'</div><div class="mc-stats">'+stats+'</div>'+list+
+    '<div class="mc-sci">'+esc(m.sci)+'</div><div class="mc-stats">'+stats+'</div>'+tgtRow+list+
     '<div class="mc-foot">Exercise list filtered to <b>'+esc(m.name.toLowerCase())+'</b> · '+count+' exercises</div></div>';
 }
 function renderMuscles(ws){
@@ -479,7 +520,8 @@ function renderMuscles(ws){
   if(mode==='week'){
     const missed=MUSCLES.filter(m=>ws[m.id].days===0);
     $('musHint').textContent='per week';
-    h+='<p class="summary">'+(missed.length?'<b>'+missed.length+'</b> muscle'+(missed.length>1?'s are':' is')+' never a main target. Tap one to see exercises that fix it.':'Every muscle is a main target at least once a week.')+'</p>';
+    const under=MUSCLES.filter(m=>tgtState(ws[m.id].sets,tgt(m.id))==='under').length;
+    h+='<p class="summary">'+(missed.length?'<b>'+missed.length+'</b> muscle'+(missed.length>1?'s are':' is')+' never a main target':'Every muscle is a main target at least once a week')+(under?', and <b>'+under+'</b> '+(under>1?'are':'is')+' below '+(under>1?'their':'its')+' weekly set target':'')+'. Tap a muscle for details.</p>';
   }else if(mode==='day'){
     const p=MUSCLES.filter(m=>s[m.id].p>0).length,hs=MUSCLES.filter(m=>s[m.id].p===0&&s[m.id].s>0).length;
     $('musHint').textContent=DAYS[state.view];
@@ -526,9 +568,9 @@ function renderCompare(){
   colorFig($('cA-front'),la);colorFig($('cA-back'),la);colorFig($('cB-front'),lb);colorFig($('cB-back'),lb);
   syncRadarCtl();
   const ax=radarAxes(A,null,ui.rax,ui.rmet),bx=radarAxes(B,null,ui.rax,ui.rmet);
-  drawRadar($('cmpRadar'),ax,[{vals:ax.map(a=>a.week),cls:'a',name:A.name,info:ax.map(a=>a.info)},{vals:bx.map(a=>a.week),cls:'b',name:B.name,info:bx.map(a=>a.info),}],{rax:ui.rax,rmet:ui.rmet,hit:true,dotsAtZero:true});
+  drawRadar($('cmpRadar'),ax,[{vals:ax.map(a=>a.week),cls:'a',name:A.name,info:ax.map(a=>a.info)},{vals:bx.map(a=>a.week),cls:'b',name:B.name,info:bx.map(a=>a.info),}],{rax:ui.rax,rmet:ui.rmet,hit:true,dotsAtZero:true,target:radarTarget(ax)});
   $('crsub').textContent=(ui.rmet==='sets'?'Weekly sets per '+(ui.rax==='muscles'?'muscle':'muscle group')+', helpers count as half.':'Days per week as main target.')+' Where one web reaches further, that split trains it more.';
-  $('crlegend').innerHTML='<span><i style="background:var(--s-a)"></i>'+esc(A.name||'Untitled split')+'</span><span><i style="background:var(--s-b)"></i>'+esc(B.name||'Untitled split')+'</span>';
+  $('crlegend').innerHTML='<span><i style="background:var(--s-a)"></i>'+esc(A.name||'Untitled split')+'</span><span><i style="background:var(--s-b)"></i>'+esc(B.name||'Untitled split')+'</span>'+targetLegend(radarTarget(ax));
   let h='<table class="wk"><thead><tr><th>Muscle</th><th>'+esc(A.name||'A')+'</th><th class="n">Sets</th><th>'+esc(B.name||'B')+'</th><th class="n">Sets</th><th class="n">Change</th></tr></thead><tbody>';
   MG.forEach(g=>{h+='<tr class="gh"><td colspan="6">'+g+'</td></tr>';
     MUSCLES.filter(m=>m.g===g).forEach(m=>{const a=wa[m.id],b=wb[m.id],sa=wStatus(a),sb=wStatus(b),d=b.sets-a.sets;
@@ -602,6 +644,8 @@ document.addEventListener('click',ev=>{
   if(t.dataset.mt){const order=['','main','help'];t.dataset.state=order[(order.indexOf(t.dataset.state)+1)%3];return}
   if(t.id==='clearDay'){arm(t,'Tap again to clear',()=>{curDay().items=[];save();render()});return}
   if(t.id==='pdfBtn'){exportPDF();return}
+  if(t.id==='tgtResetAll'){arm(t,'Tap again to reset',()=>{state.targets.per={};save();render()});return}
+  if(t.dataset.treset){delete state.targets.per[t.dataset.treset];save();render();return}
   if(t.dataset.lb!==undefined){const box=t.closest('[data-img-for]');if(box&&box._urls)openLB(EXM[box.dataset.imgFor],box._urls,+t.dataset.lb,t);return}
 });
 document.addEventListener('keydown',ev=>{if(ev.key==='Enter'){const r=ev.target.closest&&ev.target.closest('tr.go');if(r)setView(r.dataset.view)}});
@@ -620,6 +664,19 @@ document.getElementById('lb').addEventListener('click',ev=>{
   lbEl.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});
   lbEl.addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)stepLB(dx<0?1:-1);x0=null});})();
 $('q').addEventListener('input',e=>{ui.q=e.target.value;ui.limit=150;renderLibrary()});
+document.addEventListener('focusout',e=>{if(e.target.closest&&e.target.closest('.mc-tgt-edit'))setTimeout(()=>{const f=document.activeElement;if(!(f&&f.closest&&f.closest('.mc-tgt-edit')))renderMuscles(weekStats(S()))},0)});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='tgtMin'||t.id==='tgtMax'){
+    let mn=clampN($('tgtMin').value,0,60),mx=$('tgtMax').value===''?null:clampN($('tgtMax').value,0,80);
+    if(mx!==null&&mx<mn)mx=mn;state.targets.min=mn;state.targets.max=mx;save();render();return}
+  if(t.dataset.tmin||t.dataset.tmax){
+    const m=t.dataset.tmin||t.dataset.tmax,card=t.closest('.mcard');
+    const a=card.querySelector('[data-tmin]'),b=card.querySelector('[data-tmax]');
+    let mn=clampN(a.value,0,60),mx=b.value===''?null:clampN(b.value,0,80);if(mx!==null&&mx<mn)mx=mn;
+    if(mn===state.targets.min&&mx===state.targets.max)delete state.targets.per[m];else state.targets.per[m]={min:mn,max:mx};
+    save();setTimeout(()=>{const f=document.activeElement;if(f&&f.closest&&f.closest('.mc-tgt-edit')){isCmp()?renderCompare():renderRadar()}else render()},0);return}
+});
 $('fCat').addEventListener('change',e=>{ui.cat=e.target.value;ui.limit=150;renderCats();renderLibrary()});
 $('fEq').addEventListener('change',e=>{ui.eq=e.target.value;ui.limit=150;renderCats();renderLibrary()});
 $('fSrc').addEventListener('change',e=>{ui.src=e.target.value;ui.limit=150;renderCats();renderLibrary()});
@@ -654,7 +711,7 @@ document.querySelectorAll('svg[data-who]').forEach(svg=>{
   rsvg.addEventListener('pointermove',e=>{const h=e.target.closest('.r-hit');if(!h){tip.hidden=true;return}
     const i=+h.dataset.ri,a=rsvg._axes[i];let html='<b>'+esc(a.full)+'</b>';
     if(rsvg.id==='cmpRadar'){rsvg._series.forEach(s=>{html+='<span>'+esc(s.name||'')+': '+esc(s.info[i])+'</span>'})}
-    else{html+='<span>'+esc(a.info)+'</span>'+((a.day!==null&&isDay())?'<span>'+DAYS[state.view]+': '+fmt(a.day)+' sets</span>':'')+'<span>Tap to find exercises</span>'}
+    else{const t=ui.rax==='muscles'&&ui.rmet==='sets'?tgt(a.key):null;html+='<span>'+esc(a.info)+'</span>'+(t?'<span>Target '+t.min+(t.max?'–'+t.max:'+')+' sets</span>':'')+((a.day!==null&&isDay())?'<span>'+DAYS[state.view]+': '+fmt(a.day)+' sets</span>':'')+'<span>Tap to find exercises</span>'}
     placeTip(e,html)});
   rsvg.addEventListener('pointerleave',()=>tip.hidden=true);
 });
@@ -689,6 +746,8 @@ function printify(svg){
     if(has('r-a'))set(e,{fill:'#c2263a','fill-opacity':.16,stroke:'#c2263a','stroke-width':2,'stroke-linejoin':'round'});
     if(has('r-b'))set(e,{fill:'#2f63b5','fill-opacity':.12,stroke:'#2f63b5','stroke-width':2,'stroke-linejoin':'round'});
     if(has('r-dot'))set(e,{fill:has('b')?'#2f63b5':'#c2263a',stroke:'#ffffff','stroke-width':2});
+    if(has('r-tgt'))set(e,{fill:'#1f7a4d','fill-opacity':.09,stroke:'none'});
+    if(has('r-tgt-line'))set(e,{fill:'none',stroke:'#1f7a4d','stroke-width':1.5,'stroke-dasharray':'5 4'});
     e.removeAttribute('class');
   });
   svg.removeAttribute('class');
@@ -705,7 +764,7 @@ function svgPng(svg,wmm,hmm){
   });
 }
 function figSvg(side,lv){const s=el('svg',{viewBox:'0 0 200 432'});drawFig(s,side);colorFig(s,lv);return s}
-function radarSvg(axes,series,rax,rmet,marks){const s=el('svg',{viewBox:'0 0 600 470'});drawRadar(s,axes,series,{rax,rmet,marks,dotsAtZero:series.length>1});return s}
+function radarSvg(axes,series,rax,rmet,marks){const s=el('svg',{viewBox:'0 0 600 470'});drawRadar(s,axes,series,{rax,rmet,marks,dotsAtZero:series.length>1,target:axes.map(a=>tgt(a.key))});return s}
 const INK=[22,32,42],MUTED=[91,104,116],RED=[194,38,58],BLUE=[47,99,181];
 const FIG_R=432/200,RAD_R=470/600;
 function pdfHeader(doc,sub){
@@ -733,7 +792,7 @@ async function pdfSplit(split){
   doc.addImage(f1,'JPEG',22,55,fw,fh);doc.addImage(f2,'JPEG',74,55,fw,fh);
   doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...MUTED);doc.text('FRONT',22+fw/2,55+fh+4,{align:'center'});doc.text('BACK',74+fw/2,55+fh+4,{align:'center'});
   weekLegend(doc,138,70);
-  const ry=55+fh+12;pdfLabel(doc,'Spiderweb: weekly sets per muscle (helpers count as half)',14,ry);
+  const ry=55+fh+12;pdfLabel(doc,'Spiderweb: weekly sets per muscle (helpers count as half). Dashed line = set target',14,ry);
   const rw=150,rh=rw*RAD_R,ax=radarAxes(split,null,'muscles','sets');
   const r1=await svgPng(radarSvg(ax,[{vals:ax.map(a=>a.week),cls:'a'}],'muscles','sets',true),rw,rh);
   doc.addImage(r1,'JPEG',30,ry+3,rw,rh);
@@ -765,12 +824,12 @@ async function pdfSplit(split){
   }
   // muscle coverage table
   doc.addPage();pdfHeader(doc,(split.name||'Untitled split')+'  ·  Muscle coverage');
-  const rows=[];MG.forEach(g=>MUSCLES.filter(m=>m.g===g).forEach(m=>{const w=ws[m.id],st=wStatus(w);rows.push([g,m.name,w.dayList.join(', ')||'-',String(w.days),fmt(w.sets),st.txt.replace('×','x'),st.cls])}));
+  const rows=[];MG.forEach(g=>MUSCLES.filter(m=>m.g===g).forEach(m=>{const w=ws[m.id],st=wStatus(w),t=tgt(m.id);rows.push([g,m.name,w.dayList.join(', ')||'-',String(w.days),fmt(w.sets),t.min+(t.max?'-'+t.max:'+'),st.txt.replace('×','x'),st.cls,tgtState(w.sets,t)])}));
   doc.autoTable({startY:34,margin:{left:14,right:14},theme:'striped',styles:{fontSize:9,textColor:INK,cellPadding:2},headStyles:{fillColor:INK,textColor:[255,255,255],fontStyle:'bold'},alternateRowStyles:{fillColor:[245,247,249]},
-    head:[['Group','Muscle','Main target on','Days/wk','Sets/wk','Status']],body:rows.map(r=>r.slice(0,6)),
-    columnStyles:{3:{halign:'right'},4:{halign:'right'},5:{fontStyle:'bold'}},
-    didParseCell:h=>{if(h.section==='body'&&h.column.index===5)h.cell.styles.textColor=statusRGB(rows[h.row.index][6])}});
-  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);doc.text('Sets per week count helper sets as half. Days per week count only days where the muscle is a main target.',14,doc.lastAutoTable.finalY+7);
+    head:[['Group','Muscle','Main target on','Days/wk','Sets/wk','Target','Status']],body:rows.map(r=>r.slice(0,7)),
+    columnStyles:{3:{halign:'right'},4:{halign:'right'},5:{halign:'right'},6:{fontStyle:'bold'}},
+    didParseCell:h=>{if(h.section!=='body')return;const r=rows[h.row.index];if(h.column.index===6)h.cell.styles.textColor=statusRGB(r[7]);if(h.column.index===4)h.cell.styles.textColor=r[8]==='under'?[154,91,0]:r[8]==='in'?[31,122,77]:INK}});
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);doc.text('Sets per week count helper sets as half. Days per week count only days where the muscle is a main target. Green sets are inside the target, amber are below it.',14,doc.lastAutoTable.finalY+7,{maxWidth:182});
   return doc;
 }
 async function pdfCompare(A,B){

@@ -18,6 +18,7 @@ It's a single static page: no account, no server, no install. Your splits stay i
 
 - **Body maps:** front and back views with 23 muscles. A day shows main targets and helpers. The week shows how often each muscle is a main target: 1×, 2×, 3×+, helper only or missed.
 - **Spiderweb chart:** weekly sets or days per week, by muscle or by muscle group. Select a day to overlay it on the whole week.
+- **Weekly set targets:** set a target range (10–20 sets by default) for every muscle, or override it for single muscles. The target shows as a dashed ring on the spiderweb, and each muscle's card shows how far you are from it.
 - **794 exercises:** 75 hand-checked staples plus 719 from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), all with start and finish photos and step-by-step instructions. Tap a photo to see it full size.
 - **Find the right exercise:** search by name or muscle, and narrow it down with the muscle group, equipment and source dropdowns. Tap a muscle on the map to list every exercise that trains it.
 - **Multiple splits:** keep as many as you like in tabs. Duplicate one to try a variation.
@@ -54,7 +55,7 @@ Every exercise lists **main targets** (the muscles it's built for) and **helpers
 - **Days per week** counts only the days a muscle is a main target. Being a helper doesn't count as training it.
 - **Sets per week** counts main-target sets in full and helper sets as half. This is a common rule of thumb, not an exact science.
 
-A rounder spiderweb means a more balanced split. Spokes marked **!** are never a main target.
+A rounder spiderweb means a more balanced split. Spokes marked **!** are never a main target. The dashed green ring is your weekly set target: points inside it are below target. In the days view the ring sits at 2× a week.
 
 ## Run it locally
 
@@ -110,7 +111,7 @@ python3 tools/fetch_images.py        # downloads any missing photos
 ## Roadmap
 
 - [x] Photos and instructions for the staples, by linking them to their database match
-- [ ] Weekly set targets per muscle, shown as a ring on the spiderweb
+- [x] Weekly set targets per muscle, shown as a ring on the spiderweb
 - [ ] Reps, RIR and notes per exercise
 - [ ] Drag to reorder exercises and move them between days
 - [ ] Warnings for overlap, such as heavy lower-back work on back-to-back days
