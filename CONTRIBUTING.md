@@ -20,7 +20,8 @@ Most database exercises had their muscles converted automatically, so some will 
 2. Open `index.html` in a browser to test. There is no build step.
 3. Keep it dependency-free: plain HTML, CSS and JavaScript. Fonts and jsPDF load from a CDN.
 4. Check light and dark mode and a phone-width window before opening a pull request.
-5. Describe what changed and why in the pull request.
+5. If you changed CSS or JavaScript, bump the `?v=` value on the matching `<link>`/`<script>` in `index.html`, so browsers fetch the new files instead of a cached copy.
+6. Describe what changed and why in the pull request.
 
 ### Where things live
 
