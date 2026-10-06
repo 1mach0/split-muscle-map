@@ -38,7 +38,7 @@ button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 button:disabled{cursor:default;opacity:.55}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.wrap{max-width:1380px;margin:0 auto;padding-inline:16px;padding-block:20px 56px;display:flex;flex-direction:column;gap:14px}
+.wrap{max-width:1880px;margin:0 auto;padding-inline:clamp(16px,2.5vw,40px);padding-block:20px 56px;display:flex;flex-direction:column;gap:14px}
 
 /* header */
 .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px}
@@ -89,6 +89,15 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,5vw,48px);l
 /* main grid */
 .layout{display:grid;grid-template-columns:300px minmax(0,1fr) 330px;grid-template-areas:"lib map mus";gap:16px;align-items:start}
 @media (max-width:1180px){.layout{grid-template-columns:minmax(0,1fr) 320px;grid-template-areas:"map mus" "lib lib"}}
+/* wide screens: bigger side columns, body map and spiderweb side by side */
+@media (min-width:1560px){
+  .layout{grid-template-columns:330px minmax(0,1fr) 370px;gap:20px}
+  .map{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px;align-items:start}
+  .map>.caption,.map>#dayPanel{grid-column:1/-1}
+  .map>.figs{align-self:center}
+  .map>.radar{margin-top:0;padding-top:0;border-top:0;padding-left:28px;border-left:1px solid var(--line);align-self:stretch}
+  .map .r-lab{font-size:13.5px}.map .r-tick{font-size:11.5px}.map .grp .r-lab{font-size:20px}
+}
 @media (max-width:760px){.layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"map" "lib" "mus"}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
 .lib{grid-area:lib}.map{grid-area:map}.mus{grid-area:mus}
