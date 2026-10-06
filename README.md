@@ -8,7 +8,7 @@
 
 **[Open the app →](https://1mach0.github.io/split-muscle-map/)**
 
-![Week view: front and back body maps colored by how often each muscle is trained](docs/screenshot-week.png)
+![Week view: front and back body maps colored by how often each muscle is trained](docs/week-dark.png)
 
 Pick exercises for each day and front and back body maps light up the muscles you're hitting. Switch to the week view to see how many days each muscle gets trained, check the balance on a spiderweb chart, and compare two splits side by side before you commit to one.
 
@@ -32,13 +32,13 @@ It's a single static page: no account, no server, no install. Your splits stay i
 
 Pick a day and tick exercises. Main targets light up bright, helpers dimmer. Open any database exercise for start and finish photos and instructions.
 
-![Day view: Thursday's main targets and helpers on the body maps, with an exercise's photos and instructions open](docs/screenshot-day.png)
+![Day view: Thursday's main targets and helpers on the body maps, with an exercise's photos and instructions open](docs/day-dark.png)
 
 ### Compare two splits
 
 Put two splits side by side to see which one trains each muscle more often, with both drawn on one spiderweb.
 
-![Compare view: two splits' weekly body maps and an overlaid spiderweb chart](docs/screenshot-compare.png)
+![Compare view: two splits' weekly body maps and an overlaid spiderweb chart](docs/compare-dark.png)
 
 ## How the numbers work
 

@@ -10,6 +10,7 @@
   --f-display:"Big Shoulders Display","Arial Narrow","Roboto Condensed",sans-serif;
   --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --r:10px;
+  --lb-bg:rgba(8,11,14,.95); --lb-panel:#1d252c; --lb-hover:#2b353e; --lb-ink:#eef1f4; --lb-muted:#97a3ae;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0f1418; --surface:#171e24; --surface-2:#1d252c; --ink:#e6ebef; --muted:#97a3ae; --line:#2b353e;
@@ -133,6 +134,19 @@ h2{font-family:var(--f-display);font-weight:800;font-size:24px;letter-spacing:.0
 .ex-imgs figcaption{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .ex-how ol{margin:4px 0 6px;padding-left:18px;display:flex;flex-direction:column;gap:4px}
 .ex-how p{margin:0;color:var(--muted);font-size:12px}
+.ex-img-btn{display:block;width:100%;padding:0;border:0;background:none;border-radius:6px;cursor:zoom-in}
+.ex-img-btn:hover img{filter:brightness(1.08)}
+.lb{position:fixed;inset:0;z-index:50;background:var(--lb-bg);display:flex;align-items:center;justify-content:center;padding:calc(56px + env(safe-area-inset-top,0px)) 64px calc(24px + env(safe-area-inset-bottom,0px))}
+.lb-fig{margin:0;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:100%}
+.lb-fig img{display:block;width:min(900px,100%);max-height:calc(100vh - 150px);object-fit:contain;border-radius:10px;background:var(--lb-panel)}
+.lb-fig figcaption{color:var(--lb-ink);font-size:15px;font-weight:600;text-align:center}
+.lb-fig figcaption span{color:var(--lb-muted);font-weight:500}
+.lb-btn{position:absolute;border:0;border-radius:999px;background:var(--lb-panel);color:var(--lb-ink);display:grid;place-items:center}
+.lb-btn:hover{background:var(--lb-hover)}
+.lb-x{top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:40px;height:40px;font-size:18px}
+.lb-nav{top:50%;transform:translateY(-50%);width:44px;height:44px;font-size:28px;line-height:1;padding-bottom:3px}
+.lb-prev{left:12px}.lb-next{right:12px}
+@media (max-width:600px){.lb{padding-inline:12px}.lb-nav{top:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:none}.lb-fig img{max-height:calc(100vh - 210px)}}
 .more{width:100%;margin-top:6px}
 .credit{font-size:12px;color:var(--muted);margin:12px 0 0}
 .credit a{color:inherit}
