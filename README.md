@@ -40,9 +40,9 @@ Pick a day and tick exercises. Main targets light up bright, helpers dimmer, and
 
 ### Choose what the web shows
 
-With 27 muscles the spiderweb gets crowded. Open **Showing all 27 ▾** next to the chart to turn single muscles or whole groups on and off, or pick a preset: Key 16, Upper body, or Lower body & core. The web redraws as you pick, and your choice is saved. Compare view and the PDF use the same choice.
+With 27 muscles the spiderweb gets crowded. Tap the sliders button next to the chart's switches (it shows how many spokes are on, like **16/27**) to turn single muscles or whole groups on and off, or pick a preset: Key 16, Upper body, or Lower body & core. The web redraws as you pick, and your choice is saved. Compare view and the PDF use the same choice.
 
-![Spoke picker: the Key 16 preset turns the spiderweb into 16 spokes, with hidden muscles crossed out](docs/web-v1.png)
+![Spoke picker: the Key 16 preset turns the spiderweb into 16 spokes, with hidden muscles crossed out](docs/web-v2.png)
 
 ### See how it's done
 

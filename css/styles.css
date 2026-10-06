@@ -222,9 +222,9 @@ details.custom summary{cursor:pointer;font-weight:600;font-size:14px}
 /* spiderweb */
 .radar{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 .rhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
-.rctl{display:flex;flex-wrap:wrap;gap:8px}
+.rctl{display:flex;flex-wrap:wrap;gap:6px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{border:0;background:transparent;padding:5px 10px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button{border:0;background:transparent;padding:5px 9px;font-size:13px;font-weight:600;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .rsub{font-size:13px;color:var(--muted);margin:6px 0 0}
 .rlegend{display:flex;gap:14px;font-size:13px;color:var(--ink);margin-top:8px;flex-wrap:wrap}
@@ -266,7 +266,9 @@ details.custom summary{cursor:pointer;font-weight:600;font-size:14px}
 .r-hit:hover{fill:var(--ink);fill-opacity:.05}
 .r-focus{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3}
 .few .r-lab{font-size:15px}
-.webbtn{border:1px solid var(--line);background:transparent;border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.webbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:transparent;border-radius:8px;padding:5px 8px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.webbtn svg{width:14px;height:14px;flex:none}
+.webbtn span{min-width:4.6ch;text-align:left}
 .webbtn:hover{color:var(--ink);background:var(--surface-2)}
 .webbtn.on{color:var(--accent);border-color:var(--accent)}
 .menu.wp{gap:10px;padding:12px;overflow-y:auto}

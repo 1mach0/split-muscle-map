@@ -296,6 +296,7 @@ const RORDER=['chest_upper','chest','serratus','delt_front','delt_side','delt_re
 const SHORT={chest_upper:'Upper chest',chest:'Chest',delt_front:'Front delts',delt_side:'Side delts',delt_rear:'Rear delts',biceps:'Biceps',brachialis:'Brachialis',brachioradialis:'Brachiorad.',forearm_flex:'Forearm flex.',forearm_ext:'Forearm ext.',triceps:'Triceps',traps_upper:'Upper traps',traps_mid:'Mid traps',upper_back:'Upper back',lats:'Lats',lower_back:'Lower back',abs:'Abs',obliques:'Obliques',glutes:'Glutes',hamstrings:'Hamstrings',quads:'Quads',adductors:'Adductors',calves:'Calves',serratus:'Serratus',neck:'Neck',hip_flexors:'Hip flexors',tibialis:'Tibialis'};
 const RGROUPS=['Chest','Shoulders','Arms','Back','Core','Legs'];
 const webOn=id=>!state.web.hide.includes(id);
+const WEB_ICON='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 4h7M13 4h1M2 12h1M7 12h7"/><circle cx="11" cy="4" r="2"/><circle cx="5" cy="12" r="2"/></svg>';
 const webMuscles=()=>RORDER.filter(webOn);
 /* a group stays on the web while any of its muscles does; the Groups view needs 3 spokes, so it falls back to all 6 */
 const webGroupsRaw=()=>RGROUPS.filter(g=>MUSCLES.some(m=>m.g===g&&webOn(m.id)));
@@ -373,7 +374,7 @@ function syncRadarCtl(){
   document.querySelectorAll('[data-rax]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.rax===ui.rax));
   document.querySelectorAll('[data-rmet]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.rmet===ui.rmet));
   const grp=ui.rax==='groups',n=grp?webGroups().length:webMuscles().length,tot=grp?RGROUPS.length:RORDER.length;
-  document.querySelectorAll('[data-webpick]').forEach(b=>{b.textContent=(n===tot?'Showing all '+tot:'Showing '+n+' of '+tot)+' ▾';b.classList.toggle('on',n<tot);
+  document.querySelectorAll('[data-webpick]').forEach(b=>{b.innerHTML=WEB_ICON+'<span>'+n+'/'+tot+'</span>';b.classList.toggle('on',n<tot);
     b.setAttribute('aria-label','Choose which '+(grp?'muscle groups':'muscles')+' the spiderweb shows. Showing '+n+' of '+tot+'.')});
 }
 function renderRadar(){
