@@ -1,94 +1,127 @@
 # Split Muscle Map
 
-Plan a weekly training split and see exactly which muscles it trains.
+**Plan your weekly gym split and see exactly which muscles it trains.**
 
-Pick exercises for each day and the front and back body maps highlight what you're hitting. The week view shows how many days each muscle is a main target, and a spiderweb chart shows how balanced the whole split is. Build several splits, compare them side by side, and export any of it as a PDF.
+[![Live demo](https://img.shields.io/badge/demo-live-c2263a)](https://1mach0.github.io/split-muscle-map/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-16202a)](LICENSE)
+![No build step](https://img.shields.io/badge/build-none-2f63b5)
 
-No build step, no backend, no account. It's one static page.
+**[Open the app →](https://1mach0.github.io/split-muscle-map/)**
+
+![Week view: front and back body maps colored by how often each muscle is trained](docs/screenshot-week.png)
+
+Pick exercises for each day and front and back body maps light up the muscles you're hitting. Switch to the week view to see how many days each muscle gets trained, check the balance on a spiderweb chart, and compare two splits side by side before you commit to one.
+
+It's a single static page: no account, no server, no install. Your splits stay in your browser.
 
 ## Features
 
-- **Body maps:** front and back views with 23 muscles. Day view shows main targets and helpers; week view shows how often each muscle is trained (1×, 2×, 3×+, helper only, missed).
-- **Spiderweb chart:** weekly sets or days per week, by muscle or by muscle group. Pick a day to overlay it on the week.
-- **794 exercises:** 75 hand-checked staples plus 719 from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), with photos and step-by-step instructions.
-- **Filters:** search by exercise or muscle, filter by muscle group, equipment (barbell, dumbbell, cable, machine, body only, kettlebell, bands) and source. Tap any muscle to list exercises that train it.
-- **Multiple splits:** tabs for Split 1, Split 2, and so on. Duplicate a split to try changes.
-- **Compare:** two splits side by side with body maps, an overlaid spiderweb and a muscle-by-muscle table of days and sets.
-- **PDF export:** the split's body maps, spiderweb, every day with its own body maps and exercise table, and a full muscle coverage table. In compare view it exports the comparison.
-- **Custom exercises:** add your own and tag which muscles they work.
-- **Light and dark mode** follow your system setting.
+- **Body maps:** front and back views with 23 muscles. A day shows main targets and helpers. The week shows how often each muscle is a main target: 1×, 2×, 3×+, helper only or missed.
+- **Spiderweb chart:** weekly sets or days per week, by muscle or by muscle group. Select a day to overlay it on the whole week.
+- **794 exercises:** 75 hand-checked staples plus 719 from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), with start and finish photos and step-by-step instructions.
+- **Find the right exercise:** search by name or muscle, and filter by muscle group, equipment (barbell, dumbbell, cable, machine, body only, kettlebell, bands) or source. Tap a muscle on the map to list every exercise that trains it.
+- **Multiple splits:** keep as many as you like in tabs. Duplicate one to try a variation.
+- **Compare:** two splits side by side, with body maps, an overlaid spiderweb and a muscle-by-muscle table of days and sets.
+- **PDF export:** body maps, spiderweb, every day with its own body maps and exercise table, and a full muscle coverage table. In compare view it exports the comparison.
+- **Custom exercises:** add your own and tag the muscles they work.
+- **Light and dark mode**, following your system setting. Works on phones.
 
-Your splits are saved in your browser (localStorage), so they stay put between visits on the same device and browser.
+| Pick a day, see what it hits | Compare two splits |
+| --- | --- |
+| ![Day view with an exercise's photos and instructions open](docs/screenshot-day.png) | ![Compare view with two splits and an overlaid spiderweb](docs/screenshot-compare.png) |
 
-## Run it
+<p align="center"><img src="docs/screenshot-mobile.png" width="320" alt="Day view on a phone in dark mode"></p>
 
-Open `index.html` in a browser. That's it.
+## How the numbers work
 
-If your browser blocks local files for some reason, serve the folder instead:
+Every exercise lists **main targets** (the muscles it's built for) and **helpers** (muscles that assist).
+
+- **Days per week** counts only the days a muscle is a main target. Being a helper doesn't count as training it.
+- **Sets per week** counts main-target sets in full and helper sets as half. This is a common rule of thumb, not an exact science.
+
+A rounder spiderweb means a more balanced split. Spokes marked **!** are never a main target.
+
+## Run it locally
 
 ```sh
-python3 -m http.server 8000
-# then open http://localhost:8000
+git clone https://github.com/1mach0/split-muscle-map.git
+cd split-muscle-map
+open index.html          # macOS; or just double-click the file
 ```
 
-Fonts and the PDF library load from Google Fonts and jsDelivr, so the first load needs a connection.
+If your browser is strict about local files, serve the folder instead:
 
-## Put it online with GitHub Pages
+```sh
+python3 -m http.server 8000   # then visit http://localhost:8000
+```
 
-1. Push this repo to GitHub.
-2. In the repo, go to **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**, pick `main` and `/ (root)`, and save.
-4. The site appears at `https://<your-username>.github.io/<repo-name>/` after a minute or two.
+Fonts and the PDF library load from Google Fonts and jsDelivr, so the first visit needs an internet connection.
+
+## Deploy your own copy
+
+Fork the repo, then in your fork go to **Settings → Pages**, choose **Deploy from a branch**, pick `main` and `/ (root)`, and save. Your copy appears at `https://<your-username>.github.io/split-muscle-map/`.
 
 ## Project structure
 
 ```
-index.html                 Page markup
-css/styles.css             All styles, light and dark themes
-js/app.js                  App logic: state, body maps, spiderweb, compare, PDF export
-js/data/exercise-db.js     Generated exercise database (do not edit by hand)
-images/exercises/<id>/     Start and finish photos for database exercises (480px JPEGs)
-tools/build_exercise_db.py Rebuilds js/data/exercise-db.js from Free Exercise DB
-tools/fetch_images.py      Downloads and resizes the exercise photos
+index.html                  Page markup
+css/styles.css              Styles and light/dark theme tokens
+js/app.js                   App logic: state, body maps, spiderweb, compare, PDF export
+js/data/exercise-db.js      Generated exercise database (don't edit by hand)
+images/exercises/<id>/      Start and finish photos for database exercises
+tools/build_exercise_db.py  Rebuilds the exercise database from Free Exercise DB
+tools/fetch_images.py       Downloads and resizes the exercise photos
+docs/                       README screenshots
 ```
 
-## How the muscle data works
+Plain HTML, CSS and JavaScript, with no framework and no build step. The body maps and spiderweb are hand-built SVG. PDF export uses jsPDF.
 
-Each exercise lists **main targets** and **helpers**.
+## About the exercise data
 
-- A day counts toward a muscle's weekly frequency only when that muscle is a main target.
-- Weekly sets count main-target sets in full and helper sets as half.
+The 75 staples were mapped to muscles by hand.
 
-The 75 staples were mapped by hand. Free Exercise DB only uses about 17 broad labels ("shoulders", "chest", "middle back"), so `tools/build_exercise_db.py` converts them to the map's 23 muscles using the exercise name. For example, "lateral raise" becomes side delts and "incline" becomes upper chest. Most come out right, but some won't. To fix one, change the rules in that script and rebuild, or add the exercise as a staple in `js/app.js` (the `RAW` list), which takes priority over a database entry with the same name.
+Free Exercise DB only uses about 17 broad labels ("shoulders", "chest", "middle back"). `tools/build_exercise_db.py` converts them to the map's 23 muscles using the exercise name, so "lateral raise" becomes side delts and "incline" becomes upper chest. Most come out right, but some won't.
 
-### Updating the exercise database
+If you spot a wrong one, please [open an issue](https://github.com/1mach0/split-muscle-map/issues/new?template=wrong-muscle-mapping.md) or fix the rule in that script.
+
+To refresh the data from the source:
 
 ```sh
-python3 tools/build_exercise_db.py   # downloads the latest dataset and rewrites js/data/exercise-db.js
+python3 tools/build_exercise_db.py   # rewrites js/data/exercise-db.js
 pip install pillow
-python3 tools/fetch_images.py        # downloads any missing photos into images/exercises/
+python3 tools/fetch_images.py        # downloads any missing photos
 ```
 
-## Roadmap ideas
+## Roadmap
 
-- Link staples to their matching database entry so they get photos and instructions too.
-- Weekly set targets per muscle (for example 10 to 20), drawn as a ring on the spiderweb.
-- Reps, RIR and notes per exercise.
-- Drag to reorder exercises and move them between days.
-- Overlap warnings, for example heavy lower-back work on back-to-back days.
-- Split templates: push/pull/legs, upper/lower, full body, Arnold split.
-- Share a split as a link, and import or export it as JSON.
-- An "equipment I have" profile that hides exercises your gym can't do.
-- Install as an offline app (PWA).
-- A workout log to track weights over time.
-- More muscles on the map: neck, serratus, tibialis, hip flexors.
+- [ ] Photos and instructions for the staples, by linking them to their database match
+- [ ] Weekly set targets per muscle, shown as a ring on the spiderweb
+- [ ] Reps, RIR and notes per exercise
+- [ ] Drag to reorder exercises and move them between days
+- [ ] Warnings for overlap, such as heavy lower-back work on back-to-back days
+- [ ] Split templates: push/pull/legs, upper/lower, full body, Arnold
+- [ ] Share a split as a link; import and export as JSON
+- [ ] An "equipment I have" profile that hides what your gym can't do
+- [ ] Install as an offline app (PWA)
+- [ ] A workout log to track weights over time
+- [ ] More muscles on the map: neck, serratus, tibialis, hip flexors
+
+Suggestions are welcome: [open an issue](https://github.com/1mach0/split-muscle-map/issues).
+
+## Contributing
+
+Bug reports, muscle-mapping fixes and feature ideas are all welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits
 
-- Exercise data and photos: [Free Exercise DB](https://github.com/yuhonas/free-exercise-db) by yuhonas, released into the public domain under the Unlicense.
-- PDF export: [jsPDF](https://github.com/parallax/jsPDF) and [jsPDF-AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable), both MIT licensed.
-- Fonts: Big Shoulders Display and Public Sans from Google Fonts, both under the SIL Open Font License.
+- Exercise data and photos: [Free Exercise DB](https://github.com/yuhonas/free-exercise-db) by yuhonas, released into the public domain (Unlicense).
+- PDF export: [jsPDF](https://github.com/parallax/jsPDF) and [jsPDF-AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable) (MIT).
+- Fonts: [Big Shoulders Display](https://fonts.google.com/specimen/Big+Shoulders+Display) and [Public Sans](https://fonts.google.com/specimen/Public+Sans) (SIL Open Font License).
+
+## Disclaimer
+
+Split Muscle Map is a planning tool, not medical or coaching advice. Muscle involvement is simplified and varies with technique and anatomy. If you have an injury or health condition, check with a qualified professional before changing your training.
 
 ## License
 
-No license has been chosen yet. Add a `LICENSE` file before others use or contribute to the code (MIT is a common choice for small web projects).
+The code is released under the [MIT License](LICENSE). The exercise data and photos come from Free Exercise DB and are in the public domain.
