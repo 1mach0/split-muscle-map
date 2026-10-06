@@ -38,6 +38,12 @@ Pick a day and tick exercises. Main targets light up bright, helpers dimmer, and
 
 ![Day view: Thursday's main targets and helpers on the body maps and spiderweb, with an exercise's photos and instructions open](docs/day-v4.png)
 
+### Choose what the web shows
+
+With 27 muscles the spiderweb gets crowded. Open **Showing all 27 ▾** next to the chart to turn single muscles or whole groups on and off, or pick a preset: Key 16, Upper body, or Lower body & core. The web redraws as you pick, and your choice is saved. Compare view and the PDF use the same choice.
+
+![Spoke picker: the Key 16 preset turns the spiderweb into 16 spokes, with hidden muscles crossed out](docs/web-v1.png)
+
 ### See how it's done
 
 Tap a photo to open it full size. Use the arrows, the arrow keys or a swipe to flip between the start and finish positions.
@@ -58,6 +64,8 @@ Every exercise lists **main targets** (the muscles it's built for) and **helpers
 - **Sets per week** counts main-target sets in full and helper sets as half. This is a common rule of thumb, not an exact science.
 
 A rounder spiderweb means a more balanced split. Spokes marked **!** are never a main target. The dashed green ring is your weekly set target: points inside it are below target. In the days view the ring sits at 2× a week.
+
+Hiding a muscle from the spiderweb only changes the chart. The body maps, muscle cards, coverage counts and tables still count every muscle, and the Groups view still totals each group in full.
 
 ## Run it locally
 
@@ -125,6 +133,7 @@ python3 tools/fetch_images.py        # downloads any missing photos
 - [ ] Install as an offline app (PWA)
 - [ ] A workout log to track weights over time
 - [x] More muscles on the map: neck, serratus, tibialis, hip flexors
+- [x] Choose which muscles and groups the spiderweb shows
 
 Suggestions are welcome: [open an issue](https://github.com/1mach0/split-muscle-map/issues).
 
