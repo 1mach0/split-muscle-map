@@ -24,6 +24,7 @@ It's a single static page: no account, no server, no install. Your splits stay i
 - **Multiple splits:** keep as many as you like in tabs. Duplicate one to try a variation.
 - **Templates:** start a new split from Push / Pull / Legs, Upper / Lower, Full body, Arnold or Upper/Lower + Arms, then change anything you like.
 - **Compare:** two splits side by side, with body maps, an overlaid spiderweb and a muscle-by-muscle table of days and sets.
+- **Share and back up:** copy a link that lets anyone add your split to their own, or export one split or all of them as a JSON file and import it again later.
 - **PDF export:** body maps, spiderweb, every day with its own body maps and exercise table, and a full muscle coverage table. In compare view it exports the comparison.
 - **Custom exercises:** add your own and tag the muscles they work.
 - **Fits your screen:** on wide monitors the body map and spiderweb sit side by side, and the exercise and muscle panels stay in view while you scroll. On phones everything stacks.
@@ -78,6 +79,8 @@ Fonts and the PDF library load from Google Fonts and jsDelivr, so the first visi
 
 Fork the repo, then in your fork go to **Settings → Pages**, choose **Deploy from a branch**, pick `main` and `/ (root)`, and save. Your copy appears at `https://<your-username>.github.io/split-muscle-map/`.
 
+Share links point to your own site automatically. The one exception is a copy opened straight from disk: its links fall back to `PUBLIC_URL` near the sharing code in `js/app.js`, so change that to your site's address.
+
 ## Project structure
 
 ```
@@ -117,7 +120,7 @@ python3 tools/fetch_images.py        # downloads any missing photos
 - [ ] Drag to reorder exercises and move them between days
 - [ ] Warnings for overlap, such as heavy lower-back work on back-to-back days
 - [x] Split templates: push/pull/legs, upper/lower, full body, Arnold
-- [ ] Share a split as a link; import and export as JSON
+- [x] Share a split as a link; import and export as JSON
 - [ ] An "equipment I have" profile that hides what your gym can't do
 - [ ] Install as an offline app (PWA)
 - [ ] A workout log to track weights over time

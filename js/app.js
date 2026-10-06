@@ -603,25 +603,34 @@ const TEMPLATES=[{"id":"ul-arms","name":"Upper/Lower + Arms","desc":"5 days · c
 function templateDays(t){const src=t.days==='DEFAULT'?DEFAULT:t.days;return src.map(([n,l])=>({name:n,items:l.filter(x=>EXM[slug(x)]).map(x=>({ex:slug(x),sets:t.days==='DEFAULT'?2:(t.sets||3)}))}))}
 function uniqueName(base){const names=new Set(state.splits.map(s=>s.name));if(!names.has(base))return base;let n=2;while(names.has(base+' '+n))n++;return base+' '+n}
 function addSplit(name,days,msg){state.splits.push({id:uid(),name:uniqueName(name),days});state.active=state.splits.length-1;state.view=days.some(d=>d.items.length)?'week':0;ui.focus=null;ui.preview=null;save();render();toast(msg)}
-function openMenu(btn){
-  const m=$('newMenu');
-  m.innerHTML='<button class="mi" type="button" role="menuitem" data-tpl="blank"><b>Blank split</b><span>Start from an empty week</span></button><div class="mh">Templates</div>'+
-    TEMPLATES.map(t=>'<button class="mi" type="button" role="menuitem" data-tpl="'+t.id+'"><b>'+esc(t.name)+'</b><span>'+esc(t.desc)+'</span></button>').join('');
+let menuOpener=null,menuY=0;
+function showMenu(btn,html,label){
+  const m=$('newMenu');m.innerHTML=html;m.setAttribute('aria-label',label||'Menu');
   m.hidden=false;const r=btn.getBoundingClientRect(),w=Math.min(320,innerWidth-24);
   m.style.width=w+'px';m.style.left=Math.max(12,Math.min(r.left,innerWidth-w-12))+'px';m.style.top=(r.bottom+6)+'px';
-  btn.setAttribute('aria-expanded','true');m.querySelector('.mi').focus();
+  menuOpener=btn;menuY=scrollY;btn.setAttribute('aria-expanded','true');const f=m.querySelector('.mi');if(f)f.focus();
 }
-function closeMenu(){const m=$('newMenu');if(m.hidden)return;m.hidden=true;const b=$('newSplit');if(b){b.setAttribute('aria-expanded','false')}}
+function openMenu(btn){
+  showMenu(btn,'<button class="mi" type="button" role="menuitem" data-tpl="blank"><b>Blank split</b><span>Start from an empty week</span></button><div class="mh">Templates</div>'+
+    TEMPLATES.map(t=>'<button class="mi" type="button" role="menuitem" data-tpl="'+t.id+'"><b>'+esc(t.name)+'</b><span>'+esc(t.desc)+'</span></button>').join(''),'New split');
+}
+function openShareMenu(btn){
+  showMenu(btn,'<button class="mi" type="button" role="menuitem" data-act="link"><b>Copy share link</b><span>Anyone with the link can add this split to their own</span></button>'+
+    '<button class="mi" type="button" role="menuitem" data-act="exp1"><b>Export this split</b><span>Save it as a .json file</span></button>'+
+    '<button class="mi" type="button" role="menuitem" data-act="expall"><b>Export all splits</b><span>Every split, as one .json file</span></button>'+
+    '<div class="mh">Import</div><button class="mi" type="button" role="menuitem" data-act="import"><b>Import from file</b><span>Add splits from a .json file you exported</span></button>','Share');
+}
+function closeMenu(){const m=$('newMenu');if(m.hidden)return;m.hidden=true;if(menuOpener&&menuOpener.isConnected)menuOpener.setAttribute('aria-expanded','false');menuOpener=null}
 function nextSplitName(){let n=state.splits.length+1;const names=new Set(state.splits.map(s=>s.name));while(names.has('Split '+n))n++;return 'Split '+n}
 function arm(btn,label,fn){
   if(btn.dataset.armed){delete btn.dataset.armed;btn.classList.remove('armed');fn();return}
   const orig=btn.textContent;btn.dataset.armed='1';btn.classList.add('armed');btn.textContent=label;
   setTimeout(()=>{if(btn.isConnected&&btn.dataset.armed){delete btn.dataset.armed;btn.classList.remove('armed');btn.textContent=orig}},3000);
 }
-document.addEventListener('pointerdown',ev=>{const m=$('newMenu');if(!m.hidden&&!m.contains(ev.target)&&ev.target.id!=='newSplit')closeMenu()});
-addEventListener('resize',closeMenu);addEventListener('scroll',closeMenu,{passive:true});
+document.addEventListener('pointerdown',ev=>{const m=$('newMenu');if(!m.hidden&&!m.contains(ev.target)&&!(menuOpener&&menuOpener.contains(ev.target)))closeMenu()});
+addEventListener('resize',closeMenu);addEventListener('scroll',()=>{if(menuOpener&&Math.abs(scrollY-menuY)>40)closeMenu()},{passive:true});
 document.addEventListener('keydown',ev=>{const m=$('newMenu');if(m.hidden)return;
-  if(ev.key==='Escape'){closeMenu();$('newSplit').focus()}
+  if(ev.key==='Escape'){const o=menuOpener;closeMenu();if(o)o.focus()}
   else if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){ev.preventDefault();const it=[...m.querySelectorAll('.mi')];const k=it.indexOf(document.activeElement);it[(k+(ev.key==='ArrowDown'?1:-1)+it.length)%it.length].focus()}});
 document.addEventListener('click',ev=>{
   const t=ev.target.closest('button,tr.go,.mus,.r-hit');if(!t)return;
@@ -635,7 +644,14 @@ document.addEventListener('click',ev=>{
     if(t.closest('svg').dataset.who!=='main')return;
     const m=t.getAttribute('data-m');ui.focus=ui.focus===m?null:m;if(ui.focus)ui.cat='All';render();revealCard();return}
   if(t.dataset.split!==undefined){state.active=+t.dataset.split;if(isCmp())state.view='week';ui.focus=null;ui.preview=null;save();render();return}
-  if(t.id==='newSplit'){$('newMenu').hidden?openMenu(t):closeMenu();return}
+  if(t.id==='newSplit'){menuOpener===t&&!$('newMenu').hidden?closeMenu():openMenu(t);return}
+  if(t.id==='shareBtn'){menuOpener===t&&!$('newMenu').hidden?closeMenu():openShareMenu(t);return}
+  if(t.dataset.act){closeMenu();const a=t.dataset.act;
+    if(a==='link')copyShareLink();else if(a==='exp1')exportJSON([S()]);else if(a==='expall')exportJSON(state.splits);else if(a==='import')$('importFile').click();return}
+  if(t.id==='shareAdd'){acceptShared();return}
+  if(t.id==='shareDismiss'){pendingShare=null;clearShareHash();renderShareBanner();return}
+  if(t.id==='linkCopy'){const i=$('linkInput');try{navigator.clipboard.writeText(i.value).then(()=>toast('Link copied.'),()=>{i.select();toast('Press Ctrl+C or Cmd+C to copy.')})}catch(e){i.select()}return}
+  if(t.id==='linkClose'){$('linkDlg').hidden=true;return}
   if(t.dataset.tpl){closeMenu();if(isCmp())state.view='week';
     if(t.dataset.tpl==='blank'){addSplit(nextSplitName(),blankDays(),'New empty split. Pick a day and tick exercises.');state.view=0;save();render();return}
     const tp=TEMPLATES.find(x=>x.id===t.dataset.tpl);if(tp)addSplit(tp.name,templateDays(tp),'Added '+tp.name+'. Change anything you like.');return}
@@ -894,6 +910,77 @@ async function pdfCompare(A,B){
   }
   return doc;
 }
+/* ---------- sharing: link in the URL hash, JSON import and export ---------- */
+const PUBLIC_URL='https://1mach0.github.io/split-muscle-map/';
+const b64u={enc:str=>{const bytes=new TextEncoder().encode(str);let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')},
+  dec:t=>{t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';const bin=atob(t),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new TextDecoder().decode(bytes)}};
+function usedCustom(splits){const ids=new Set();splits.forEach(sp=>sp.days.forEach(d=>d.items.forEach(it=>{if(String(it.ex).startsWith('c-'))ids.add(it.ex)})));return state.custom.filter(c=>ids.has(c.id))}
+function sharePayload(sp){return{v:1,n:sp.name,d:sp.days.map(d=>[d.name,d.items.map(it=>[it.ex,it.sets])]),c:usedCustom([sp]).map(c=>[c.id,c.name,c.p,c.s])}}
+function shareLink(sp){
+  const base=(window.claude||location.protocol==='file:'||!/^https?:/.test(location.protocol))?PUBLIC_URL:location.origin+location.pathname;
+  return base+'#split-'+b64u.enc(JSON.stringify(sharePayload(sp)));
+}
+function copyShareLink(){
+  const link=shareLink(S());
+  const show=()=>{const d=$('linkDlg'),i=$('linkInput');i.value=link;d.hidden=false;i.focus();i.select()};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(link).then(()=>toast('Share link copied. Paste it anywhere.'),show);return}}catch(e){}
+  show();
+}
+let pendingShare=null;
+function readShareHash(){
+  const h=location.hash||'';if(!h.startsWith('#split-'))return null;
+  try{const o=JSON.parse(b64u.dec(h.slice(7)));if(!o||!Array.isArray(o.d))return null;return o}catch(e){return null}
+}
+function clearShareHash(){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){try{location.hash=''}catch(_){}}}
+function renderShareBanner(){
+  const b=$('shareBanner');
+  if(!pendingShare){b.hidden=true;b.innerHTML='';return}
+  const days=pendingShare.d.filter(d=>d[1]&&d[1].length).length,sets=pendingShare.d.reduce((a,d)=>a+(d[1]||[]).reduce((x,y)=>x+(+y[1]||0),0),0);
+  b.innerHTML='<div><b>Shared split: '+esc(pendingShare.n||'Untitled split')+'</b><span>'+days+' training day'+(days===1?'':'s')+' · '+sets+' sets a week</span></div><div class="banner-act"><button class="btn small primary" type="button" id="shareAdd">Add to my splits</button><button class="btn small" type="button" id="shareDismiss">Dismiss</button></div>';
+  b.hidden=false;
+}
+function addCustomDefs(defs){(defs||[]).forEach(c=>{if(!c||!c.id||EXM[c.id])return;const p=(c.p||[]).filter(m=>MBY[m]),s2=(c.s||[]).filter(m=>MBY[m]);if(!p.length)return;state.custom.push({id:c.id,name:String(c.name||'Custom exercise').slice(0,60),cat:'Custom',custom:true,p,s:s2})});rebuildEx()}
+function resolveEx(id,name){if(id&&EXM[id])return id;if(name){const n=String(name).toLowerCase();const e=allEx().find(x=>x.name.toLowerCase()===n);if(e)return e.id}return null}
+function normDays(list,skip){
+  const out=DAYS.map((_,i)=>{const d=list[i];if(!d)return{name:'',items:[]};
+    const items=[];(d.items||[]).forEach(it=>{const id=resolveEx(it.id||it.ex,it.name);if(!id){skip.n++;return}const sets=Math.max(1,Math.min(10,Math.round(+it.sets||2)));if(!items.some(x=>x.ex===id))items.push({ex:id,sets})});
+    return{name:String(d.name||'').slice(0,40),items}});
+  return out;
+}
+function acceptShared(){
+  const o=pendingShare;if(!o)return;
+  addCustomDefs((o.c||[]).map(c=>({id:c[0],name:c[1],p:c[2],s:c[3]})));
+  const skip={n:0};const days=normDays(o.d.map(d=>({name:d[0],items:(d[1]||[]).map(x=>({id:x[0],sets:x[1]}))})),skip);
+  pendingShare=null;clearShareHash();
+  addSplit(o.n||'Shared split',days,'Added '+(o.n||'the shared split')+'.'+(skip.n?' '+skip.n+' unknown exercise'+(skip.n>1?'s were':' was')+' skipped.':''));
+  renderShareBanner();
+}
+function exportJSON(splits){
+  const data={app:'split-muscle-map',version:1,exported:new Date().toISOString(),
+    splits:splits.map(sp=>({name:sp.name,days:sp.days.map((d,i)=>({day:DAYS[i],name:d.name,items:d.items.filter(it=>EXM[it.ex]).map(it=>({id:it.ex,name:EXM[it.ex].name,sets:it.sets}))}))})),
+    custom:usedCustom(splits).map(c=>({id:c.id,name:c.name,p:c.p,s:c.s}))};
+  const name=(splits.length===1?'split-'+slug(splits[0].name||'split'):'splits-all')+'.json';
+  saveFile(name,JSON.stringify(data,null,2),'application/json',splits.length===1?'Split exported.':'All splits exported.');
+}
+async function saveFile(name,text,type,okMsg){
+  const dl=await downloadsCap();
+  if(dl===undefined){const blob=new Blob([text],{type}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast(okMsg)}
+  else if(dl===null)toast('Saving files isn\u2019t available in this view.');
+  else{try{await dl.save({filename:name,data:new Blob([text],{type})});toast(okMsg)}catch(e){toast(e&&e.code==='declined'?'Save cancelled.':'Couldn\u2019t save the file here.')}}
+}
+function importJSON(text){
+  let o;try{o=JSON.parse(text)}catch(e){toast('That file isn\u2019t valid JSON.');return}
+  const list=Array.isArray(o)?o:Array.isArray(o.splits)?o.splits:(o&&Array.isArray(o.days))?[o]:null;
+  if(!list||!list.length){toast('No splits found in that file.');return}
+  addCustomDefs(o.custom);
+  const skip={n:0};let added=0;
+  list.forEach(sp=>{if(!sp||!Array.isArray(sp.days))return;state.splits.push({id:uid(),name:uniqueName(String(sp.name||'Imported split').slice(0,40)),days:normDays(sp.days,skip)});added++});
+  if(!added){toast('No splits found in that file.');return}
+  state.active=state.splits.length-1;state.view='week';ui.focus=null;save();render();
+  toast('Imported '+added+' split'+(added>1?'s':'')+'.'+(skip.n?' '+skip.n+' unknown exercise'+(skip.n>1?'s were':' was')+' skipped.':''));
+}
+$('importFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>importJSON(String(r.result));r.onerror=()=>toast('Couldn\u2019t read that file.');r.readAsText(f);e.target.value=''});
+addEventListener('hashchange',()=>{const o=readShareHash();if(o){pendingShare=o;renderShareBanner()}});
 let dlP=null;
 function downloadsCap(){if(!dlP)dlP=(window.claude&&typeof window.claude.use==='function')?window.claude.use('downloads').catch(()=>null):Promise.resolve(undefined);return dlP}
 async function exportPDF(){
@@ -911,5 +998,6 @@ async function exportPDF(){
   }catch(e){console.error(e);toast('Something went wrong making the PDF.')}
   finally{btn.disabled=false;btn.textContent=orig}
 }
+pendingShare=readShareHash();renderShareBanner();
 render();
 })();

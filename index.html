@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>html{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
-<link rel="stylesheet" href="css/styles.css?v=2026.10.07b">
+<link rel="stylesheet" href="css/styles.css?v=2026.10.07c">
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js" defer></script>
 </head>
@@ -22,12 +22,14 @@
   </header>
 
   <div class="tabs" id="tabs" role="tablist" aria-label="Splits"></div>
+  <div class="banner" id="shareBanner" role="status" hidden></div>
 
   <div id="editView">
     <div style="display:flex;flex-direction:column;gap:14px">
       <div class="splitbar">
         <input class="splitname" id="splitName" type="text" maxlength="40" aria-label="Split name">
         <button class="btn small" type="button" id="dupSplit">Duplicate</button>
+        <button class="btn small" type="button" id="shareBtn" aria-haspopup="menu" aria-expanded="false">Share ▾</button>
         <button class="btn small" type="button" id="delSplit">Delete split</button>
         <div class="cover" id="cover" aria-live="polite"></div>
       </div>
@@ -134,13 +136,20 @@
 <div class="tip" id="tip" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <div class="menu" id="newMenu" role="menu" aria-label="New split" hidden></div>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<div class="dlg" id="linkDlg" role="dialog" aria-modal="false" aria-labelledby="linkTitle" hidden>
+  <b id="linkTitle">Share link</b>
+  <p>Anyone who opens this link can add the split to their own list. Your other splits stay private.</p>
+  <div class="dlg-row"><input id="linkInput" type="text" readonly aria-label="Share link"><button class="btn small primary" type="button" id="linkCopy">Copy</button></div>
+  <button class="linkbtn" type="button" id="linkClose">Close</button>
+</div>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lbCap">
   <button class="lb-btn lb-x" type="button" id="lbClose" aria-label="Close photo">✕</button>
   <button class="lb-btn lb-nav lb-prev" type="button" id="lbPrev" aria-label="Previous photo">‹</button>
   <figure class="lb-fig"><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
   <button class="lb-btn lb-nav lb-next" type="button" id="lbNext" aria-label="Next photo">›</button>
 </div>
-<script src="js/data/exercise-db.js?v=2026.10.07b"></script>
-<script src="js/app.js?v=2026.10.07b"></script>
+<script src="js/data/exercise-db.js?v=2026.10.07c"></script>
+<script src="js/app.js?v=2026.10.07c"></script>
 </body>
 </html>
