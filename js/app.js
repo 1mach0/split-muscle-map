@@ -371,7 +371,7 @@ function renderTargetCtl(){
 function renderTabs(){
   let h='';
   state.splits.forEach((s,i)=>{h+='<button class="tab" type="button" role="tab" data-split="'+i+'" aria-selected="'+(!isCmp()&&state.active===i)+'">'+esc(s.name||'Untitled split')+'</button>'});
-  h+='<button class="tab add" type="button" id="newSplit">+ New split</button><span class="tabspacer"></span>';
+  h+='<button class="tab add" type="button" id="newSplit" aria-haspopup="menu" aria-expanded="false">+ New split ▾</button><span class="tabspacer"></span>';
   h+='<button class="tab cmp" type="button" role="tab" id="cmpTab" aria-selected="'+isCmp()+'">Compare splits</button>';
   $('tabs').innerHTML=h;
 }
@@ -599,12 +599,30 @@ function light(){const ws=weekStats(S());renderMap(ws);renderMuscles(ws)}
 let toastT;
 function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2800)}
 function setView(v){state.view=v==='week'?'week':+v;ui.preview=null;save();render()}
+const TEMPLATES=[{"id":"ul-arms","name":"Upper/Lower + Arms","desc":"5 days · chest, back and legs 2×, plus a delts, traps and arms day","sets":2,"days":"DEFAULT"},{"id":"ppl","name":"Push / Pull / Legs","desc":"6 days · every muscle twice a week","sets":3,"days":[["Push A",["Bench press","Overhead press","Incline DB press","Lateral raise","Tricep rope pushdown","Overhead tricep extension"]],["Pull A",["Pull-up","Barbell row","Seated cable row (close grip)","Face pull","Barbell curl","Hammer curl"]],["Legs A",["Back squat","Barbell RDL","Leg press","Lying leg curl","Standing calf raise","Cable crunch"]],["Push B",["Incline bench press","Seated DB shoulder press","Machine chest flye (pec deck)","Cable lateral raise","Dip","Skull crusher"]],["Pull B",["Lat pulldown (wide grip)","Chest-supported row","Single-arm DB row","Rear delt flye","Incline DB curl","DB shrugs"]],["Legs B",["Front squat","Hip thrust","Bulgarian split squat","Seated leg curl","Leg extension","Seated DB calf raise","Hanging leg raise"]],["Rest",[]]]},{"id":"ul","name":"Upper / Lower","desc":"4 days · upper and lower body twice a week","sets":3,"days":[["Upper A",["Bench press","Barbell row","Overhead press","Lat pulldown (V-grip)","Lateral raise","Barbell curl","Tricep rope pushdown"]],["Lower A",["Back squat","Barbell RDL","Leg press","Lying leg curl","Standing calf raise","Plank"]],["Rest",[]],["Upper B",["Incline DB press","Pull-up","Seated DB shoulder press","Seated cable row (close grip)","Face pull","Hammer curl","Overhead tricep extension"]],["Lower B",["Deadlift","Bulgarian split squat","Hip thrust","Leg extension","Seated leg curl","Seated DB calf raise","Hanging leg raise"]],["Rest",[]],["Rest",[]]]},{"id":"fb","name":"Full body","desc":"3 days · whole body every session","sets":3,"days":[["Full body A",["Back squat","Bench press","Barbell row","Lateral raise","Barbell curl","Plank"]],["Rest",[]],["Full body B",["Deadlift","Overhead press","Pull-up","Walking lunge","Tricep rope pushdown","Cable crunch"]],["Rest",[]],["Full body C",["Front squat","Incline DB press","Seated cable row (close grip)","Lying leg curl","Face pull","Standing calf raise"]],["Rest",[]],["Rest",[]]]},{"id":"arnold","name":"Arnold split","desc":"6 days · chest + back, shoulders + arms, legs, each twice","sets":3,"days":[["Chest & Back",["Bench press","Pull-up","Incline DB press","Barbell row","Cable flye","Lat pulldown (wide grip)"]],["Shoulders & Arms",["Overhead press","Lateral raise","Rear delt flye","Barbell curl","Skull crusher","Hammer curl","Overhead tricep extension"]],["Legs",["Back squat","Barbell RDL","Leg press","Lying leg curl","Standing calf raise","Hanging leg raise"]],["Chest & Back",["Incline bench press","Chin-up","Flat DB press","T-bar row","Machine chest flye (pec deck)","Seated cable row (close grip)"]],["Shoulders & Arms",["Seated DB shoulder press","Cable lateral raise","Face pull","Incline DB curl","Tricep rope pushdown","Preacher curl","Dip"]],["Legs",["Front squat","Hip thrust","Bulgarian split squat","Seated leg curl","Leg extension","Seated DB calf raise","Cable crunch"]],["Rest",[]]]}];
+function templateDays(t){const src=t.days==='DEFAULT'?DEFAULT:t.days;return src.map(([n,l])=>({name:n,items:l.filter(x=>EXM[slug(x)]).map(x=>({ex:slug(x),sets:t.days==='DEFAULT'?2:(t.sets||3)}))}))}
+function uniqueName(base){const names=new Set(state.splits.map(s=>s.name));if(!names.has(base))return base;let n=2;while(names.has(base+' '+n))n++;return base+' '+n}
+function addSplit(name,days,msg){state.splits.push({id:uid(),name:uniqueName(name),days});state.active=state.splits.length-1;state.view=days.some(d=>d.items.length)?'week':0;ui.focus=null;ui.preview=null;save();render();toast(msg)}
+function openMenu(btn){
+  const m=$('newMenu');
+  m.innerHTML='<button class="mi" type="button" role="menuitem" data-tpl="blank"><b>Blank split</b><span>Start from an empty week</span></button><div class="mh">Templates</div>'+
+    TEMPLATES.map(t=>'<button class="mi" type="button" role="menuitem" data-tpl="'+t.id+'"><b>'+esc(t.name)+'</b><span>'+esc(t.desc)+'</span></button>').join('');
+  m.hidden=false;const r=btn.getBoundingClientRect(),w=Math.min(320,innerWidth-24);
+  m.style.width=w+'px';m.style.left=Math.max(12,Math.min(r.left,innerWidth-w-12))+'px';m.style.top=(r.bottom+6)+'px';
+  btn.setAttribute('aria-expanded','true');m.querySelector('.mi').focus();
+}
+function closeMenu(){const m=$('newMenu');if(m.hidden)return;m.hidden=true;const b=$('newSplit');if(b){b.setAttribute('aria-expanded','false')}}
 function nextSplitName(){let n=state.splits.length+1;const names=new Set(state.splits.map(s=>s.name));while(names.has('Split '+n))n++;return 'Split '+n}
 function arm(btn,label,fn){
   if(btn.dataset.armed){delete btn.dataset.armed;btn.classList.remove('armed');fn();return}
   const orig=btn.textContent;btn.dataset.armed='1';btn.classList.add('armed');btn.textContent=label;
   setTimeout(()=>{if(btn.isConnected&&btn.dataset.armed){delete btn.dataset.armed;btn.classList.remove('armed');btn.textContent=orig}},3000);
 }
+document.addEventListener('pointerdown',ev=>{const m=$('newMenu');if(!m.hidden&&!m.contains(ev.target)&&ev.target.id!=='newSplit')closeMenu()});
+addEventListener('resize',closeMenu);addEventListener('scroll',closeMenu,{passive:true});
+document.addEventListener('keydown',ev=>{const m=$('newMenu');if(m.hidden)return;
+  if(ev.key==='Escape'){closeMenu();$('newSplit').focus()}
+  else if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){ev.preventDefault();const it=[...m.querySelectorAll('.mi')];const k=it.indexOf(document.activeElement);it[(k+(ev.key==='ArrowDown'?1:-1)+it.length)%it.length].focus()}});
 document.addEventListener('click',ev=>{
   const t=ev.target.closest('button,tr.go,.mus,.r-hit');if(!t)return;
   if(t.classList.contains('r-hit')){
@@ -617,7 +635,10 @@ document.addEventListener('click',ev=>{
     if(t.closest('svg').dataset.who!=='main')return;
     const m=t.getAttribute('data-m');ui.focus=ui.focus===m?null:m;if(ui.focus)ui.cat='All';render();revealCard();return}
   if(t.dataset.split!==undefined){state.active=+t.dataset.split;if(isCmp())state.view='week';ui.focus=null;ui.preview=null;save();render();return}
-  if(t.id==='newSplit'){state.splits.push({id:uid(),name:nextSplitName(),days:blankDays()});state.active=state.splits.length-1;state.view=0;ui.focus=null;save();render();toast('New empty split. Pick a day and tick exercises.');return}
+  if(t.id==='newSplit'){$('newMenu').hidden?openMenu(t):closeMenu();return}
+  if(t.dataset.tpl){closeMenu();if(isCmp())state.view='week';
+    if(t.dataset.tpl==='blank'){addSplit(nextSplitName(),blankDays(),'New empty split. Pick a day and tick exercises.');state.view=0;save();render();return}
+    const tp=TEMPLATES.find(x=>x.id===t.dataset.tpl);if(tp)addSplit(tp.name,templateDays(tp),'Added '+tp.name+'. Change anything you like.');return}
   if(t.id==='cmpTab'){if(state.splits.length<2){toast('Make a second split first, then compare them.');return}
     state.cmpA=state.active===0?1:0;state.cmpB=state.active;if(state.cmpA>state.cmpB){const x=state.cmpA;state.cmpA=state.cmpB;state.cmpB=x}state.view='compare';tip.hidden=true;save();render();return}
   if(t.id==='dupSplit'){const s=S();state.splits.push({id:uid(),name:(s.name||'Split')+' copy',days:JSON.parse(JSON.stringify(s.days))});state.active=state.splits.length-1;save();render();toast('Duplicated. Change this copy and compare it to the original.');return}

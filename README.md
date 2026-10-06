@@ -22,6 +22,7 @@ It's a single static page: no account, no server, no install. Your splits stay i
 - **794 exercises:** 75 hand-checked staples plus 719 from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), all with start and finish photos and step-by-step instructions. Tap a photo to see it full size.
 - **Find the right exercise:** search by name or muscle, and narrow it down with the muscle group, equipment and source dropdowns. Tap a muscle on the map to list every exercise that trains it.
 - **Multiple splits:** keep as many as you like in tabs. Duplicate one to try a variation.
+- **Templates:** start a new split from Push / Pull / Legs, Upper / Lower, Full body, Arnold or Upper/Lower + Arms, then change anything you like.
 - **Compare:** two splits side by side, with body maps, an overlaid spiderweb and a muscle-by-muscle table of days and sets.
 - **PDF export:** body maps, spiderweb, every day with its own body maps and exercise table, and a full muscle coverage table. In compare view it exports the comparison.
 - **Custom exercises:** add your own and tag the muscles they work.
@@ -115,7 +116,7 @@ python3 tools/fetch_images.py        # downloads any missing photos
 - [ ] Reps, RIR and notes per exercise
 - [ ] Drag to reorder exercises and move them between days
 - [ ] Warnings for overlap, such as heavy lower-back work on back-to-back days
-- [ ] Split templates: push/pull/legs, upper/lower, full body, Arnold
+- [x] Split templates: push/pull/legs, upper/lower, full body, Arnold
 - [ ] Share a split as a link; import and export as JSON
 - [ ] An "equipment I have" profile that hides what your gym can't do
 - [ ] Install as an offline app (PWA)
