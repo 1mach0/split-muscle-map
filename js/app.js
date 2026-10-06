@@ -650,7 +650,7 @@ let menuOpener=null,menuY=0;
 function showMenu(btn,html,label,o){
   o=o||{};const m=$('newMenu');m.innerHTML=html;m.setAttribute('aria-label',label||'Menu');
   m.setAttribute('role',o.role||'menu');m.className='menu'+(o.cls?' '+o.cls:'');
-  m.style.maxHeight='';m.hidden=false;const r=btn.getBoundingClientRect(),w=Math.min(o.width||320,innerWidth-24);
+  m.style.maxHeight='';m.style.position='';m.hidden=false;const r=btn.getBoundingClientRect(),w=Math.min(o.width||320,innerWidth-24);
   m.style.width=w+'px';m.style.left=Math.max(12,Math.min(o.alignRight?r.right-w:r.left,innerWidth-w-12))+'px';
   const h=m.offsetHeight,below=innerHeight-r.bottom-18,above=r.top-18;
   const bx=o.beside&&o.beside.getBoundingClientRect();
@@ -672,7 +672,21 @@ function webPanelHTML(){
   h+='<div class="wp-foot">'+n+' of '+RORDER.length+' muscles · Groups view: '+(g>=3?g+' of 6 groups':'needs 3 groups, so it shows all 6')+'</div>';
   return h;
 }
-function openWebPanel(btn){showMenu(btn,webPanelHTML(),'Spiderweb spokes',{role:'dialog',cls:'wp',width:380,alignRight:true,focus:'[data-wpre]',beside:btn.closest('.radar').querySelector('.rbox')})}
+function openWebPanel(btn){
+  showMenu(btn,webPanelHTML(),'Spiderweb spokes',{role:'dialog',cls:'wp',width:380,alignRight:true,focus:'#none'});
+  placeWebPanel();const f=$('newMenu').querySelector('[data-wpre]');if(f)f.focus({preventScroll:true});
+}
+/* the spokes panel is pinned to the page, not the window, so it scrolls with the chart and stays open */
+const isWebPanel=()=>{const m=$('newMenu');return !m.hidden&&m.classList.contains('wp')};
+function placeWebPanel(){
+  const m=$('newMenu'),btn=menuOpener;if(!isWebPanel()||!btn||!btn.isConnected)return;
+  const r=btn.getBoundingClientRect(),w=Math.min(380,innerWidth-24),bx=btn.closest('.radar').querySelector('.rbox').getBoundingClientRect();
+  let left,top;
+  if(bx.left-w-16>=12){left=bx.left-w-16;top=r.top}/* beside the chart so changes stay visible */
+  else{left=Math.max(12,Math.min(r.right-w,innerWidth-w-12));top=r.bottom+6}
+  m.style.position='absolute';m.style.maxHeight='';m.style.width=w+'px';
+  m.style.left=Math.round(left+scrollX)+'px';m.style.top=Math.round(top+scrollY)+'px';
+}
 function webChanged(focusSel){
   save();isCmp()?renderCompare():renderRadar();
   const m=$('newMenu');if(!m.hidden&&m.classList.contains('wp')){m.innerHTML=webPanelHTML();const f=focusSel&&m.querySelector(focusSel);if(f)f.focus()}
@@ -699,8 +713,11 @@ function arm(btn,label,fn){
   const orig=btn.textContent;btn.dataset.armed='1';btn.classList.add('armed');btn.textContent=label;
   setTimeout(()=>{if(btn.isConnected&&btn.dataset.armed){delete btn.dataset.armed;btn.classList.remove('armed');btn.textContent=orig}},3000);
 }
-document.addEventListener('pointerdown',ev=>{const m=$('newMenu');if(!m.hidden&&!m.contains(ev.target)&&!(menuOpener&&menuOpener.contains(ev.target)))closeMenu()});
-addEventListener('resize',closeMenu);addEventListener('scroll',()=>{if(menuOpener&&Math.abs(scrollY-menuY)>40)closeMenu()},{passive:true});
+document.addEventListener('pointerdown',ev=>{const m=$('newMenu');if(!m.hidden&&!isWebPanel()&&!m.contains(ev.target)&&!(menuOpener&&menuOpener.contains(ev.target)))closeMenu()});
+/* the spokes panel closes on a tap or click outside it, not on pointerdown, so a touch scroll doesn't close it */
+document.addEventListener('click',ev=>{const m=$('newMenu');if(isWebPanel()&&!m.contains(ev.target)&&!(menuOpener&&menuOpener.contains(ev.target)))closeMenu()},true);
+addEventListener('resize',()=>{isWebPanel()?placeWebPanel():closeMenu()});
+addEventListener('scroll',()=>{if(menuOpener&&!isWebPanel()&&Math.abs(scrollY-menuY)>40)closeMenu()},{passive:true});
 document.addEventListener('keydown',ev=>{const m=$('newMenu');if(m.hidden)return;
   if(ev.key==='Escape'){const o=menuOpener;closeMenu();if(o)o.focus()}
   else if((ev.key==='ArrowDown'||ev.key==='ArrowUp')&&m.querySelector('.mi')){ev.preventDefault();const it=[...m.querySelectorAll('.mi')];const k=it.indexOf(document.activeElement);it[(k+(ev.key==='ArrowDown'?1:-1)+it.length)%it.length].focus()}});
