@@ -5,9 +5,11 @@ const DAYS_LONG=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','
 const MUSCLES=[
  {id:'chest_upper',name:'Upper chest',sci:'Pectoralis major, clavicular head',g:'Chest'},
  {id:'chest',name:'Mid & lower chest',sci:'Pectoralis major, sternal head',g:'Chest'},
+ {id:'serratus',name:'Serratus',sci:'Serratus anterior (side of the ribs)',g:'Chest'},
  {id:'delt_front',name:'Front delts',sci:'Anterior deltoid',g:'Shoulders'},
  {id:'delt_side',name:'Side delts',sci:'Lateral deltoid',g:'Shoulders'},
  {id:'delt_rear',name:'Rear delts',sci:'Posterior deltoid',g:'Shoulders'},
+ {id:'neck',name:'Neck',sci:'Sternocleidomastoid & neck extensors',g:'Back'},
  {id:'traps_upper',name:'Upper traps',sci:'Trapezius, upper fibres',g:'Back'},
  {id:'traps_mid',name:'Mid & lower traps',sci:'Trapezius, middle & lower fibres',g:'Back'},
  {id:'lats',name:'Lats',sci:'Latissimus dorsi',g:'Back'},
@@ -21,11 +23,13 @@ const MUSCLES=[
  {id:'forearm_ext',name:'Forearm extensors',sci:'Wrist & finger extensors',g:'Arms'},
  {id:'abs',name:'Abs',sci:'Rectus abdominis',g:'Core'},
  {id:'obliques',name:'Obliques',sci:'External & internal obliques',g:'Core'},
+ {id:'hip_flexors',name:'Hip flexors',sci:'Iliopsoas & rectus femoris',g:'Core'},
  {id:'glutes',name:'Glutes',sci:'Gluteus maximus & medius',g:'Legs'},
  {id:'quads',name:'Quads',sci:'Quadriceps femoris',g:'Legs'},
  {id:'hamstrings',name:'Hamstrings',sci:'Biceps femoris & semis',g:'Legs'},
  {id:'adductors',name:'Adductors',sci:'Inner thigh: adductor magnus, longus, brevis',g:'Legs'},
- {id:'calves',name:'Calves',sci:'Gastrocnemius & soleus',g:'Legs'}
+ {id:'calves',name:'Calves',sci:'Gastrocnemius & soleus',g:'Legs'},
+ {id:'tibialis',name:'Tibialis',sci:'Tibialis anterior (front of the shin)',g:'Legs'}
 ];
 const MG=['Chest','Shoulders','Back','Arms','Core','Legs'];
 const MBY={};MUSCLES.forEach(m=>MBY[m.id]=m);
@@ -40,7 +44,8 @@ const RAW=[
 ['Machine chest flye (pec deck)','Chest','chest','chest_upper delt_front','Machine'],
 ['Low-to-high cable flye','Chest','chest_upper','chest delt_front','Cable'],
 ['Dip','Chest','chest triceps','delt_front','Body only'],
-['Push-up','Chest','chest','chest_upper delt_front triceps abs','Body only'],
+['Push-up','Chest','chest','chest_upper delt_front triceps abs serratus','Body only'],
+['Scapular push-up','Chest','serratus','chest','Body only'],
 ['Lat pulldown (V-grip)','Back','lats','upper_back biceps brachialis','Cable'],
 ['Lat pulldown (wide grip)','Back','lats upper_back','biceps delt_rear traps_mid','Cable'],
 ['Single-arm cable pulldown','Back','lats','upper_back biceps','Cable'],
@@ -55,6 +60,7 @@ const RAW=[
 ['Yates row','Back','lats upper_back','traps_mid biceps lower_back','Barbell'],
 ['T-bar row','Back','upper_back lats','traps_mid delt_rear lower_back biceps','Barbell'],
 ['Straight-arm pulldown','Back','lats','triceps abs','Cable'],
+['Dumbbell pullover','Back','lats chest','serratus triceps','Dumbbell'],
 ['Deadlift','Back','glutes hamstrings lower_back','quads traps_upper traps_mid forearm_flex lats adductors','Barbell'],
 ['Back extension','Back','lower_back glutes','hamstrings','Body only'],
 ['Overhead press','Shoulders & traps','delt_front','delt_side triceps traps_upper chest_upper','Barbell'],
@@ -67,6 +73,8 @@ const RAW=[
 ['Upright row','Shoulders & traps','delt_side traps_upper','delt_front biceps','Barbell'],
 ['Smith shrugs','Shoulders & traps','traps_upper','traps_mid forearm_flex','Machine'],
 ['DB shrugs','Shoulders & traps','traps_upper','traps_mid forearm_flex','Dumbbell'],
+['Neck curl','Shoulders & traps','neck','','Other'],
+['Neck extension','Shoulders & traps','neck','traps_upper','Other'],
 ["Farmer's carry",'Shoulders & traps','forearm_flex traps_upper','traps_mid obliques abs','Dumbbell'],
 ['Barbell curl','Arms','biceps','brachialis forearm_flex','Barbell'],
 ['Incline DB curl','Arms','biceps','brachialis','Dumbbell'],
@@ -81,14 +89,15 @@ const RAW=[
 ['Wrist curl','Arms','forearm_flex','','Dumbbell'],
 ['Wrist extension','Arms','forearm_ext','','Dumbbell'],
 ['Cable crunch','Core','abs','obliques','Cable'],
-['Knee raise','Core','abs','obliques','Body only'],
-['Hanging leg raise','Core','abs','obliques forearm_flex','Body only'],
-['Dead bug','Core','abs','obliques','Body only'],
+['Knee raise','Core','abs','obliques hip_flexors','Body only'],
+['Hanging leg raise','Core','abs hip_flexors','obliques forearm_flex','Body only'],
+['Lying leg raise','Core','abs hip_flexors','obliques','Body only'],
+['Dead bug','Core','abs','obliques hip_flexors','Body only'],
 ['Russian twist','Core','obliques','abs','Body only'],
 ['Side plank','Core','obliques','abs glutes','Body only'],
 ['Pallof press','Core','obliques','abs','Cable'],
 ['Plank','Core','abs','obliques','Body only'],
-['Ab wheel rollout','Core','abs','obliques lats','Other'],
+['Ab wheel rollout','Core','abs','obliques lats serratus','Other'],
 ['Back squat','Legs','quads glutes','adductors lower_back','Barbell'],
 ['Front squat','Legs','quads','glutes adductors abs upper_back','Barbell'],
 ['Hack squat','Legs','quads','glutes adductors','Machine'],
@@ -105,7 +114,9 @@ const RAW=[
 ['Adductor machine','Legs','adductors','','Machine'],
 ['Abductor machine','Legs','glutes','','Machine'],
 ['Standing calf raise','Legs','calves','','Machine'],
-['Seated DB calf raise','Legs','calves','','Dumbbell']
+['Seated DB calf raise','Legs','calves','','Dumbbell'],
+['Tibialis raise','Legs','tibialis','','Body only'],
+['Cable hip flexion','Legs','hip_flexors','quads','Cable']
 ];
 const DBX=window.EXERCISE_DB||[];
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -142,7 +153,7 @@ function exImages(e){
   return Promise.resolve(Array.from({length:e.nimg},(_,i)=>IMG_DIR+e.img.split('/').map(encodeURIComponent).join('/')+'/'+i+'.jpg'));
 }
 /* staples borrow photos and steps from their closest Free Exercise DB match */
-const STAPLE_LINK={"Bench press":"Barbell Bench Press - Medium Grip","Incline bench press":"Barbell Incline Bench Press - Medium Grip","Incline DB press":"Incline Dumbbell Press","Flat DB press":"Dumbbell Bench Press","Machine chest press":"Leverage Chest Press","Cable flye":"Cable Crossover","Machine chest flye (pec deck)":"Butterfly","Low-to-high cable flye":"Low Cable Crossover","Dip":"Dips - Chest Version","Push-up":"Pushups","Lat pulldown (V-grip)":"V-Bar Pulldown","Lat pulldown (wide grip)":"Wide-Grip Lat Pulldown","Single-arm cable pulldown":"One Arm Lat Pulldown","Pull-up":"Pullups","Chin-up":"Chin-Up","Seated cable row (close grip)":"Seated Cable Rows","Seated cable row (wide bar)":"Seated Cable Rows","Seated row machine":"Leverage Iso Row","Chest-supported row":"Dumbbell Incline Row","Single-arm DB row":"One-Arm Dumbbell Row","Barbell row":"Bent Over Barbell Row","Yates row":"Reverse Grip Bent-Over Rows","T-bar row":"T-Bar Row with Handle","Straight-arm pulldown":"Straight-Arm Pulldown","Deadlift":"Barbell Deadlift","Back extension":"Hyperextensions (Back Extensions)","Overhead press":"Standing Military Press","Seated DB shoulder press":"Seated Dumbbell Press","Lateral raise":"Side Lateral Raise","Cable lateral raise":"Cable Seated Lateral Raise","Rear delt flye":"Seated Bent-Over Rear Delt Raise","Reverse pec deck":"Reverse Machine Flyes","Face pull":"Face Pull","Upright row":"Upright Barbell Row","Smith shrugs":"Barbell Shrug","DB shrugs":"Dumbbell Shrug","Farmer's carry":"Farmer's Walk","Barbell curl":"Barbell Curl","Incline DB curl":"Incline Dumbbell Curl","Preacher curl":"Preacher Curl","Cable curl":"Standing Biceps Cable Curl","Hammer curl":"Hammer Curls","Reverse curl":"Reverse Barbell Curl","Overhead tricep extension":"Standing Dumbbell Triceps Extension","Tricep rope pushdown":"Triceps Pushdown - Rope Attachment","Skull crusher":"EZ-Bar Skullcrusher","Close-grip bench":"Close-Grip Barbell Bench Press","Wrist curl":"Seated Dumbbell Palms-Up Wrist Curl","Wrist extension":"Seated Dumbbell Palms-Down Wrist Curl","Cable crunch":"Cable Crunch","Knee raise":"Knee/Hip Raise On Parallel Bars","Hanging leg raise":"Hanging Leg Raise","Dead bug":"Dead Bug","Russian twist":"Russian Twist","Side plank":"Side Bridge","Pallof press":"Pallof Press","Plank":"Plank","Ab wheel rollout":"Ab Roller","Back squat":"Barbell Full Squat","Front squat":"Front Barbell Squat","Hack squat":"Hack Squat","Leg press":"Leg Press","Bulgarian split squat":"Split Squat with Dumbbells","Walking lunge":"Dumbbell Lunges","Reverse lunge":"Dumbbell Rear Lunge","Barbell RDL":"Romanian Deadlift","Good morning":"Good Morning","Hip thrust":"Barbell Hip Thrust","Lying leg curl":"Lying Leg Curls","Seated leg curl":"Seated Leg Curl","Leg extension":"Leg Extensions","Adductor machine":"Thigh Adductor","Abductor machine":"Thigh Abductor","Standing calf raise":"Standing Calf Raises","Seated DB calf raise":"Dumbbell Seated One-Leg Calf Raise"};
+const STAPLE_LINK={"Bench press":"Barbell Bench Press - Medium Grip","Incline bench press":"Barbell Incline Bench Press - Medium Grip","Incline DB press":"Incline Dumbbell Press","Flat DB press":"Dumbbell Bench Press","Machine chest press":"Leverage Chest Press","Cable flye":"Cable Crossover","Machine chest flye (pec deck)":"Butterfly","Low-to-high cable flye":"Low Cable Crossover","Dip":"Dips - Chest Version","Push-up":"Pushups","Lat pulldown (V-grip)":"V-Bar Pulldown","Lat pulldown (wide grip)":"Wide-Grip Lat Pulldown","Single-arm cable pulldown":"One Arm Lat Pulldown","Pull-up":"Pullups","Chin-up":"Chin-Up","Seated cable row (close grip)":"Seated Cable Rows","Seated cable row (wide bar)":"Seated Cable Rows","Seated row machine":"Leverage Iso Row","Chest-supported row":"Dumbbell Incline Row","Single-arm DB row":"One-Arm Dumbbell Row","Barbell row":"Bent Over Barbell Row","Yates row":"Reverse Grip Bent-Over Rows","T-bar row":"T-Bar Row with Handle","Straight-arm pulldown":"Straight-Arm Pulldown","Deadlift":"Barbell Deadlift","Back extension":"Hyperextensions (Back Extensions)","Overhead press":"Standing Military Press","Seated DB shoulder press":"Seated Dumbbell Press","Lateral raise":"Side Lateral Raise","Cable lateral raise":"Cable Seated Lateral Raise","Rear delt flye":"Seated Bent-Over Rear Delt Raise","Reverse pec deck":"Reverse Machine Flyes","Face pull":"Face Pull","Upright row":"Upright Barbell Row","Smith shrugs":"Barbell Shrug","DB shrugs":"Dumbbell Shrug","Farmer's carry":"Farmer's Walk","Barbell curl":"Barbell Curl","Incline DB curl":"Incline Dumbbell Curl","Preacher curl":"Preacher Curl","Cable curl":"Standing Biceps Cable Curl","Hammer curl":"Hammer Curls","Reverse curl":"Reverse Barbell Curl","Overhead tricep extension":"Standing Dumbbell Triceps Extension","Tricep rope pushdown":"Triceps Pushdown - Rope Attachment","Skull crusher":"EZ-Bar Skullcrusher","Close-grip bench":"Close-Grip Barbell Bench Press","Wrist curl":"Seated Dumbbell Palms-Up Wrist Curl","Wrist extension":"Seated Dumbbell Palms-Down Wrist Curl","Cable crunch":"Cable Crunch","Knee raise":"Knee/Hip Raise On Parallel Bars","Hanging leg raise":"Hanging Leg Raise","Dead bug":"Dead Bug","Russian twist":"Russian Twist","Side plank":"Side Bridge","Pallof press":"Pallof Press","Plank":"Plank","Ab wheel rollout":"Ab Roller","Back squat":"Barbell Full Squat","Front squat":"Front Barbell Squat","Hack squat":"Hack Squat","Leg press":"Leg Press","Bulgarian split squat":"Split Squat with Dumbbells","Walking lunge":"Dumbbell Lunges","Reverse lunge":"Dumbbell Rear Lunge","Barbell RDL":"Romanian Deadlift","Good morning":"Good Morning","Hip thrust":"Barbell Hip Thrust","Lying leg curl":"Lying Leg Curls","Seated leg curl":"Seated Leg Curl","Leg extension":"Leg Extensions","Adductor machine":"Thigh Adductor","Abductor machine":"Thigh Abductor","Standing calf raise":"Standing Calf Raises","Seated DB calf raise":"Dumbbell Seated One-Leg Calf Raise","Dumbbell pullover":"Straight-Arm Dumbbell Pullover","Lying leg raise":"Flat Bench Lying Leg Raise","Neck curl":"Lying Face Up Plate Neck Resistance","Neck extension":"Lying Face Down Plate Neck Resistance","Cable hip flexion":"Hip Flexion with Band"};
 (function(){const byName={};DBX.forEach((r,ix)=>byName[r[0]]=ix);BASE.forEach(e=>{const ix=byName[STAPLE_LINK[e.name]];if(ix===undefined)return;const r=DBX[ix];e.ref=r[0];e.how=r[6];e.img=r[7];e.nimg=r[8]||0;e.ix=ix})})();
 const EQS=['Barbell','Dumbbell','Cable','Machine','Body only','Kettlebell','Bands','Other'];
 const DEFAULT=[
@@ -208,7 +219,11 @@ const FRONT=[
  ['abs','M99 126 Q91 126 87 130 L87 196 Q92 206 99 211 Z'],
  ['quads','M69 222 Q64 262 72 316 Q82 326 92 318 Q89 290 88 264 Q87 242 91 233 Q81 226 69 222 Z'],
  ['adductors','M98 232 Q93 231 91 235 Q88 262 92 300 Q98 270 99 242 Z'],
- ['calves','M75 344 Q69 368 76 394 L80 394 Q78 368 83 345 Z M93 344 Q97 368 91 394 L88 394 Q90 368 88 346 Z']
+ ['calves','M75 344 Q69 368 76 394 L80 394 Q78 368 83 345 Z M93 344 Q97 368 91 394 L88 394 Q90 368 88 346 Z'],
+ ['tibialis','M84 345 Q88 346 88 352 Q87 372 86 394 L82 394 Q81 370 84 345 Z'],
+ ['neck','M91 47 Q93 47 94 50 Q96 58 99 65 Q96 66 94 64 Q92 56 91 47 Z'],
+ ['serratus','M70 112 L77 115 L72 118 L78 121 L72 124 L77 127 L71 129 Q68 120 70 112 Z'],
+ ['hip_flexors','M87 208 Q81 212 76 220 Q83 225 90 231 Q90 220 87 208 Z']
 ];
 const FRONT_DECO='M87 148 L113 148 M87 168 L113 168 M88 187 L112 187 M100 127 L100 209 M80 238 Q84 262 82 300';
 const BACK=[
@@ -223,7 +238,8 @@ const BACK=[
  ['forearm_ext','M44 162 Q38 192 35 229 L46 231 Q55 198 63 166 Q53 158 44 162 Z'],
  ['glutes','M70 206 Q65 224 70 246 Q84 256 99 249 L99 212 Q86 202 70 206 Z'],
  ['hamstrings','M70 250 Q67 284 75 320 L93 320 Q98 286 98 254 Q84 260 70 250 Z'],
- ['calves','M74 336 Q66 360 76 388 Q82 396 88 388 Q98 360 93 336 Q84 330 74 336 Z']
+ ['calves','M74 336 Q66 360 76 388 Q82 396 88 388 Q98 360 93 336 Q84 330 74 336 Z'],
+ ['neck','M92 44 Q96 45 99 45 L99 52 Q95 52 92 51 Z']
 ];
 const BACK_DECO='M100 52 L100 206 M84 262 Q83 290 84 318 M84 340 L84 384';
 const NS='http://www.w3.org/2000/svg';
@@ -273,8 +289,8 @@ function coverCounts(ws){let ok=0,once=0,help=0,miss=0;MUSCLES.forEach(m=>{const
 const coverHTML=c=>'<span class="pill ok">'+c.ok+' trained 2×+</span><span class="pill warn">'+c.once+' trained 1×</span><span class="pill helper">'+c.help+' helper only</span><span class="pill bad">'+c.miss+' missed</span>';
 
 /* ---------- spiderweb ---------- */
-const RORDER=['chest_upper','chest','delt_front','delt_side','delt_rear','biceps','brachialis','brachioradialis','forearm_flex','forearm_ext','triceps','traps_upper','traps_mid','upper_back','lats','lower_back','abs','obliques','glutes','hamstrings','quads','adductors','calves'];
-const SHORT={chest_upper:'Upper chest',chest:'Chest',delt_front:'Front delts',delt_side:'Side delts',delt_rear:'Rear delts',biceps:'Biceps',brachialis:'Brachialis',brachioradialis:'Brachiorad.',forearm_flex:'Forearm flex.',forearm_ext:'Forearm ext.',triceps:'Triceps',traps_upper:'Upper traps',traps_mid:'Mid traps',upper_back:'Upper back',lats:'Lats',lower_back:'Lower back',abs:'Abs',obliques:'Obliques',glutes:'Glutes',hamstrings:'Hamstrings',quads:'Quads',adductors:'Adductors',calves:'Calves'};
+const RORDER=['chest_upper','chest','serratus','delt_front','delt_side','delt_rear','biceps','brachialis','brachioradialis','forearm_flex','forearm_ext','triceps','neck','traps_upper','traps_mid','upper_back','lats','lower_back','abs','obliques','hip_flexors','glutes','hamstrings','quads','adductors','calves','tibialis'];
+const SHORT={chest_upper:'Upper chest',chest:'Chest',delt_front:'Front delts',delt_side:'Side delts',delt_rear:'Rear delts',biceps:'Biceps',brachialis:'Brachialis',brachioradialis:'Brachiorad.',forearm_flex:'Forearm flex.',forearm_ext:'Forearm ext.',triceps:'Triceps',traps_upper:'Upper traps',traps_mid:'Mid traps',upper_back:'Upper back',lats:'Lats',lower_back:'Lower back',abs:'Abs',obliques:'Obliques',glutes:'Glutes',hamstrings:'Hamstrings',quads:'Quads',adductors:'Adductors',calves:'Calves',serratus:'Serratus',neck:'Neck',hip_flexors:'Hip flexors',tibialis:'Tibialis'};
 const RGROUPS=['Chest','Shoulders','Arms','Back','Core','Legs'];
 function groupDay(items,g){let p=0,s=0;items.forEach(it=>{const e=EXM[it.ex];if(!e)return;
   if(e.p.some(m=>MBY[m]&&MBY[m].g===g))p+=it.sets;else if(e.s.some(m=>MBY[m]&&MBY[m].g===g))s+=it.sets;});return{p,s}}
@@ -319,7 +335,7 @@ function drawRadar(svg,axes,series,opt){
   series.forEach(s=>svg.appendChild(el('polygon',{points:poly(s.vals),class:'r-'+s.cls})));
   series.forEach(s=>s.vals.forEach((v,i)=>{if(s.cls==='b'&&!(v>0)&&!opt.dotsAtZero)return;const [x,y]=pt(i,v);svg.appendChild(el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:4,class:'r-dot '+s.cls}))}));
   axes.forEach((a,i)=>{
-    const [lx,ly]=pt(i,top);const off=opt.rax==='groups'?18:16;const c=Math.cos(ang(i)),s=Math.sin(ang(i));
+    const c=Math.cos(ang(i)),s=Math.sin(ang(i));const [lx,ly]=pt(i,top);const off=(opt.rax==='groups'?18:16)+(n>20?(Math.abs(c)<0.08?8:(Math.abs(c)<0.2&&i%2?13:0)):0);
     const x=lx+c*off,y=ly+s*off;
     const anchor=Math.abs(c)<0.08?'middle':(c>0?'start':'end');
     const z=opt.marks&&a.zero;
@@ -512,7 +528,7 @@ function muscleCard(m,mode,ws,s,lv){
   return '<div class="mcard" role="region" aria-label="'+esc(m.name)+' details">'+
     '<div class="mc-head"><span class="sw '+(lv[m.id]||'')+'"></span><b>'+m.name+'</b><span class="pill '+pillCls+'">'+pillTxt+'</span><button class="mc-x" type="button" data-focus="'+m.id+'" aria-label="Close '+esc(m.name)+' details">✕</button></div>'+
     '<div class="mc-sci">'+esc(m.sci)+'</div><div class="mc-stats">'+stats+'</div>'+tgtRow+list+
-    '<div class="mc-foot">Exercise list filtered to <b>'+esc(m.name.toLowerCase())+'</b> · '+count+' exercises</div></div>';
+    '<div class="mc-foot">Exercise list filtered to <b>'+esc(m.name.toLowerCase())+'</b> · '+count+' exercise'+(count===1?'':'s')+'</div></div>';
 }
 function renderMuscles(ws){
   const {mode,s,lv}=cur;

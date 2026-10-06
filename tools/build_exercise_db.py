@@ -32,13 +32,13 @@ EQUIPMENT = {
 }
 
 GROUP = {
-    "chest": "Chest", "chest_upper": "Chest",
+    "chest": "Chest", "chest_upper": "Chest", "serratus": "Chest", "neck": "Shoulders & traps",
     "lats": "Back", "upper_back": "Back", "lower_back": "Back",
     "delt_front": "Shoulders & traps", "delt_side": "Shoulders & traps", "delt_rear": "Shoulders & traps",
     "traps_upper": "Shoulders & traps", "traps_mid": "Shoulders & traps",
     "biceps": "Arms", "brachialis": "Arms", "brachioradialis": "Arms", "triceps": "Arms",
     "forearm_flex": "Arms", "forearm_ext": "Arms",
-    "abs": "Core", "obliques": "Core",
+    "abs": "Core", "obliques": "Core", "hip_flexors": "Core", "tibialis": "Legs",
     "glutes": "Legs", "quads": "Legs", "hamstrings": "Legs", "adductors": "Legs", "calves": "Legs",
 }
 
@@ -93,11 +93,20 @@ def map_muscle(muscle, name, primaries, is_primary):
         "adductors": "adductors", "calves": "calves", "glutes": "glutes",
         "hamstrings": "hamstrings", "quadriceps": "quads", "lats": "lats",
         "lower back": "lower_back", "middle back": "upper_back", "triceps": "triceps",
-    }.get(muscle)  # "neck" has no region on the map
+        "neck": "neck",
+    }.get(muscle)
 
 
 def add_companions(name, main, helpers):
     """Helpers the dataset usually leaves out."""
+    if has(name, r"hip flexion"):
+        main[:] = ["hip_flexors"] + [m for m in main if m not in ("quads", "hip_flexors")]
+    elif has(name, r"leg raise|knee raise|knee tuck|knee/hip raise|jackknife|v-up|flutter|scissor|mountain climber|toes to bar|hanging pike|leg pull-in"):
+        helpers.append("hip_flexors")
+    if has(name, r"pullover|scaption|push-?ups?|serratus|scapular push"):
+        helpers.append("serratus")
+    if has(name, r"toe raise|tibialis|dorsiflex"):
+        main[:] = ["tibialis"]
     if "delt_front" in main and has(name, r"press|jerk|handstand|pike"):
         helpers += ["delt_side", "triceps"]
     if "chest" in main and has(name, r"press|push-?up|dip"):

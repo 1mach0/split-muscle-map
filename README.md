@@ -16,10 +16,10 @@ It's a single static page: no account, no server, no install. Your splits stay i
 
 ## Features
 
-- **Body maps:** front and back views with 23 muscles. A day shows main targets and helpers. The week shows how often each muscle is a main target: 1×, 2×, 3×+, helper only or missed.
+- **Body maps:** front and back views with 27 muscles, including neck, serratus, hip flexors and tibialis. A day shows main targets and helpers. The week shows how often each muscle is a main target: 1×, 2×, 3×+, helper only or missed.
 - **Spiderweb chart:** weekly sets or days per week, by muscle or by muscle group. Select a day to overlay it on the whole week.
 - **Weekly set targets:** set a target range (10–20 sets by default) for every muscle, or override it for single muscles. The target shows as a dashed ring on the spiderweb, and each muscle's card shows how far you are from it.
-- **794 exercises:** 75 hand-checked staples plus 719 from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), all with start and finish photos and step-by-step instructions. Tap a photo to see it full size.
+- **806 exercises:** 82 hand-checked staples plus 724 from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), nearly all with start and finish photos and step-by-step instructions. Tap a photo to see it full size.
 - **Find the right exercise:** search by name or muscle, and narrow it down with the muscle group, equipment and source dropdowns. Tap a muscle on the map to list every exercise that trains it.
 - **Multiple splits:** keep as many as you like in tabs. Duplicate one to try a variation.
 - **Templates:** start a new split from Push / Pull / Legs, Upper / Lower, Full body, Arnold or Upper/Lower + Arms, then change anything you like.
@@ -98,9 +98,9 @@ Plain HTML, CSS and JavaScript, with no framework and no build step. The body ma
 
 ## About the exercise data
 
-The 75 staples were mapped to muscles by hand.
+The 82 staples were mapped to muscles by hand.
 
-Free Exercise DB only uses about 17 broad labels ("shoulders", "chest", "middle back"). `tools/build_exercise_db.py` converts them to the map's 23 muscles using the exercise name, so "lateral raise" becomes side delts and "incline" becomes upper chest. Most come out right, but some won't.
+Free Exercise DB only uses about 17 broad labels ("shoulders", "chest", "middle back"). `tools/build_exercise_db.py` converts them to the map's 27 muscles using the exercise name, so "lateral raise" becomes side delts and "incline" becomes upper chest. Most come out right, but some won't.
 
 If you spot a wrong one, please [open an issue](https://github.com/1mach0/split-muscle-map/issues) with the exercise name and the muscles it should show, or fix the rule in that script.
 
@@ -124,7 +124,7 @@ python3 tools/fetch_images.py        # downloads any missing photos
 - [ ] An "equipment I have" profile that hides what your gym can't do
 - [ ] Install as an offline app (PWA)
 - [ ] A workout log to track weights over time
-- [ ] More muscles on the map: neck, serratus, tibialis, hip flexors
+- [x] More muscles on the map: neck, serratus, tibialis, hip flexors
 
 Suggestions are welcome: [open an issue](https://github.com/1mach0/split-muscle-map/issues).
 
