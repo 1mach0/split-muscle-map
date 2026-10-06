@@ -58,8 +58,10 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,5vw,48px);l
 .tabspacer{flex:1 0 12px}
 .tab.cmp{color:var(--s-b)}
 .tab.cmp[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--s-b)}
-.splitbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.splitname{flex:1;min-width:180px;max-width:420px;border:1px solid transparent;background:transparent;border-radius:6px;padding:4px 6px;margin-left:-6px;font-family:var(--f-display);font-weight:800;font-size:26px;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+.splitbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.splitbar .cover{margin-left:auto}
+@media (max-width:900px){.splitbar .cover{margin-left:0;width:100%}}
+.splitname{flex:0 1 auto;width:14ch;field-sizing:content;min-width:6ch;max-width:420px;border:1px solid transparent;background:transparent;border-radius:6px;padding:4px 6px;margin-left:-6px;font-family:var(--f-display);font-weight:800;font-size:26px;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
 .splitname:hover,.splitname:focus{border-color:var(--line);background:var(--surface)}
 
 /* coverage summary */
