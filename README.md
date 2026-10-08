@@ -34,6 +34,27 @@ cd split-muscle-map
 python3 -m http.server 8000
 ```
 
+## Roadmap
+
+- [x] Photos and instructions for the staples, by linking them to their database match
+- [x] Weekly set targets per muscle, shown as a ring on the spiderweb
+- [ ] Reps, RIR and notes per exercise
+- [ ] Drag to reorder exercises and move them between days
+- [ ] Warnings for overlap, such as heavy lower-back work on back-to-back days
+- [x] Split templates: push/pull/legs, upper/lower, full body, Arnold
+- [x] Share a split as a link; import and export as JSON
+- [ ] An "equipment I have" profile that hides what your gym can't do
+- [ ] Install as an offline app (PWA)
+- [ ] A workout log to track weights over time
+- [x] More muscles on the map: neck, serratus, tibialis, hip flexors
+- [x] Choose which muscles and groups the spiderweb shows
+
+Suggestions are welcome: [open an issue](https://github.com/1mach0/split-muscle-map/issues).
+
+## Contributing
+
+Bug reports, muscle-mapping fixes and feature ideas are all welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Credits
 
 - Exercise data and photos: [Free Exercise DB](https://github.com/yuhonas/free-exercise-db) (public domain)
