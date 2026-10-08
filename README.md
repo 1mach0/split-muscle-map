@@ -62,4 +62,4 @@ Bug reports, muscle-mapping fixes and feature ideas are all welcome. See [CONTRI
 
 ## License
 
-[MIT](LICENSE).
+[MIT](LICENSE)
